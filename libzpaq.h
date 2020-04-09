@@ -836,10 +836,10 @@ Use at your own risk.
 
 namespace libzpaq {
 	// 1, 2, 4, 8 byte unsigned integers
-	typedef uint8_t U8;
-	typedef uint16_t U16;
-	typedef uint32_t U32;
-	typedef uint64_t U64;
+	using U8 = uint8_t;
+	using U16 = uint16_t;
+	using U32 = uint32_t;
+	using U64 = uint64_t;
 
 	// Tables for parsing ZPAQL source code
 	extern const char* compname[256];    // list of ZPAQL component types

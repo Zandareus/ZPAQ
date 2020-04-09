@@ -204,14 +204,14 @@ private:
 };
 
 #else  // Windows
-typedef DWORD ThreadReturn;
-typedef HANDLE ThreadID;
+using ThreadReturn = DWORD;
+using ThreadID = HANDLE;
 void run(ThreadID& tid, ThreadReturn(*f)(void*), void* arg) {
 	tid = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)f, arg, 0, nullptr);
 	if (tid == nullptr) error("CreateThread failed");
 }
 void join(ThreadID& tid) { WaitForSingleObject(tid, INFINITE); }
-typedef HANDLE Mutex;
+using Mutex = HANDLE;
 void init_mutex(Mutex& m) { m = CreateMutex(nullptr, FALSE, nullptr); }
 void lock(Mutex& m) { WaitForSingleObject(m, INFINITE); }
 void release(Mutex& m) { ReleaseMutex(m); }
@@ -388,7 +388,7 @@ const char* const RBPLUS = "rb+";
 const char* const WBPLUS = "wb+";
 
 #else // Windows
-typedef HANDLE FP;
+using FP = HANDLE;
 const FP FPNULL = INVALID_HANDLE_VALUE;
 typedef enum { RB, WB, RBPLUS, WBPLUS } MODE;  // fopen modes
 
@@ -973,7 +973,7 @@ struct DT {
 	vector<unsigned> ptr;  // fragment list
 	DT() : date(0), size(0), attr(0), data(0) {}
 };
-typedef map<string, DT> DTMap;
+using DTMap = map<string, DT>;
 
 // list of blocks to extract
 struct Block {
@@ -1005,10 +1005,10 @@ struct VER {
 
 // Windows API functions not in Windows XP to be dynamically loaded
 #ifndef unix
-typedef HANDLE(WINAPI* FindFirstStreamW_t)
+using FindFirstStreamW_t = HANDLE(WINAPI*)
 (LPCWSTR, STREAM_INFO_LEVELS, LPVOID, DWORD);
 FindFirstStreamW_t findFirstStreamW = nullptr;
-typedef BOOL(WINAPI* FindNextStreamW_t)(HANDLE, LPVOID);
+using FindNextStreamW_t = BOOL(WINAPI*)(HANDLE, LPVOID);
 FindNextStreamW_t findNextStreamW = nullptr;
 #endif
 

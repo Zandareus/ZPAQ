@@ -5668,7 +5668,7 @@ In 64 bit mode, the following additional registers are used:
 
 	/*---------------------------------------------------------------------------*/
 
-	typedef struct _trbudget_t trbudget_t;
+	using trbudget_t = struct _trbudget_t;
 	struct _trbudget_t {
 		int chance;
 		int remain;
