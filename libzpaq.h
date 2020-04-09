@@ -828,10 +828,9 @@ Use at your own risk.
 #ifndef DEBUG
 #define NDEBUG 1
 #endif
-#include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstdint>
+#include <cstring>
 #include <algorithm>
 
 namespace libzpaq {
@@ -915,11 +914,11 @@ namespace libzpaq {
 		n = sz;
 		const size_t nb = 128 + n * sizeof(T);  // test for overflow
 		if (nb <= 128 || (nb - 128) / sizeof(T) != n) n = 0, error("Array too big");
-		data = (T*)::calloc(nb, 1);
+		data = static_cast<T*>(::calloc(nb, 1));
 		if (!data) n = 0, error("Out of memory");
 		offset = 64 - (((char*)data - (char*)nullptr) & 63);
 		assert(offset > 0 && offset <= 64);
-		data = (T*)((char*)data + offset);
+		data = static_cast<T*>((char*)data + offset);
 	}
 
 	//////////////////////////// SHA1 ////////////////////////////

@@ -24,10 +24,10 @@ See libzpaq.h for additional documentation.
 
 #include "pch.h"
 #include "libzpaq.h"
-#include <string.h>
+#include <cstring>
 #include <string>
 #include <vector>
-#include <stdio.h>
+#include <cstdio>
 
 #ifdef unix
 #ifndef NOJIT
