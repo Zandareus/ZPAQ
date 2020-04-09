@@ -256,7 +256,7 @@ std::wstring utow(const char* ss, char slash = '\\') {
 	assert((wchar_t)(-1) == 65535);
 	std::wstring r;
 	if (!ss) return r;
-	const unsigned char* s = (const unsigned char*)ss;
+	const auto* s = (const unsigned char*)ss;
 	for (; s && *s; ++s) {
 		if (s[0] == '/') r += slash;
 		else if (s[0] < 128) r += s[0];
@@ -277,7 +277,7 @@ void printUTF8(const char* s, FILE* f = stdout) {
 #ifdef unix
 	fprintf(f, "%s", s);
 #else
-	const HANDLE h = (HANDLE)_get_osfhandle(_fileno(f));
+	const auto h = (HANDLE)_get_osfhandle(_fileno(f));
 	DWORD ft = GetFileType(h);
 	if (ft == FILE_TYPE_CHAR) {
 		fflush(f);
@@ -2211,8 +2211,8 @@ int Jidac::add() {
 	vector<DTMap::iterator> vf;
 	int64_t total_size = 0;  // size of all input
 	int64_t total_done = 0;  // input deduped so far
-	for (DTMap::iterator p = edt.begin(); p != edt.end(); ++p) {
-		DTMap::iterator a = dt.find(rename(p->first));
+	for (auto p = edt.begin(); p != edt.end(); ++p) {
+		auto a = dt.find(rename(p->first));
 		if (a != dt.end()) a->second.data = 1;  // keep
 		if (p->second.date && p->first != "" && p->first[p->first.size() - 1] != '/'
 			&& (force || a == dt.end()
@@ -2307,7 +2307,7 @@ int Jidac::add() {
 		}
 
 		// Wait for jobs to finish
-		job.write(sb, 0, "");  // signal end of input
+		job.write(sb, nullptr, "");  // signal end of input
 		for (unsigned i = 0; i < tid.size(); ++i) join(tid[i]);
 		join(wid);
 
@@ -2360,7 +2360,7 @@ int Jidac::add() {
 		int bufptr = 0, buflen = 0;  // read pointer and limit
 		if (fi < vf.size()) {
 			assert(vf[fi]->second.ptr.size() == 0);
-			DTMap::iterator p = vf[fi];
+			auto p = vf[fi];
 
 			// Open input file
 			bufptr = buflen = 0;
@@ -2539,11 +2539,11 @@ int Jidac::add() {
 		}  // end for each fragment fj
 		if (fi < vf.size()) {
 			dedupesize += fsize;
-			DTMap::iterator p = vf[fi];
+			auto p = vf[fi];
 			print_progress(total_size, total_done, summary);
 			if (summary <= 0) {
 				string newname = rename(p->first.c_str());
-				DTMap::iterator a = dt.find(newname);
+				auto a = dt.find(newname);
 				if (a == dt.end() || a->second.date == 0) printf("+ ");
 				else printf("# ");
 				printUTF8(p->first.c_str());
@@ -2618,10 +2618,10 @@ int Jidac::add() {
 
 	// Append compressed index to archive
 	int added = 0;  // count
-	for (DTMap::iterator p = edt.begin();; ++p) {
+	for (auto p = edt.begin();; ++p) {
 		if (p != edt.end()) {
 			string filename = rename(p->first);
-			DTMap::iterator a = dt.find(filename);
+			auto a = dt.find(filename);
 			if (p->second.date && (a == dt.end() // new file
 				|| a->second.date != p->second.date  // date change
 				|| (a->second.attr && a->second.attr != p->second.attr)  // attr ch.
@@ -2918,7 +2918,7 @@ ThreadReturn decompressThread(void* arg) {
 		// Write the files in dt that point to this block
 		lock(job.write_mutex);
 		for (unsigned ip = 0; ip < b.files.size(); ++ip) {
-			DTMap::iterator p = b.files[ip];
+			auto p = b.files[ip];
 			if (p->second.date == 0 || p->second.data < 0
 				|| p->second.data >= int64_t(p->second.ptr.size()))
 				continue;  // don't write
@@ -3188,7 +3188,7 @@ int Jidac::extract() {
 	// and set date and attributes.
 	ExtractJob job(*this);
 	int total_files = 0, skipped = 0;
-	for (DTMap::iterator p = dt.begin(); p != dt.end(); ++p) {
+	for (auto p = dt.begin(); p != dt.end(); ++p) {
 		p->second.data = -1;  // skip
 		if (p->second.date && p->first != "") {
 			const string fn = rename(p->first);
@@ -3313,7 +3313,7 @@ int Jidac::extract() {
 		// Append I blocks of selected files
 		unsigned dtcount = 0;
 		StringBuffer is;
-		for (DTMap::iterator p = dt.begin();; ++p) {
+		for (auto p = dt.begin();; ++p) {
 			if (p != dt.end() && p->second.date > 0 && p->second.data >= 0) {
 				string filename = rename(p->first);
 				puti(is, p->second.date, 8);
@@ -3365,7 +3365,7 @@ int Jidac::extract() {
 	InputArchive in(archive.c_str(), password);
 	if (in.isopen()) {
 		FP outf = FPNULL;
-		DTMap::iterator dtptr = dt.end();
+		auto dtptr = dt.end();
 		for (unsigned i = 0; i < block.size(); ++i) {
 			if (block[i].usize < 0 && block[i].size>0) {
 				Block& b = block[i];
@@ -3452,7 +3452,7 @@ int Jidac::extract() {
 
 	// Create empty directories and set file dates and attributes
 	if (!dotest) {
-		for (DTMap::reverse_iterator p = dt.rbegin(); p != dt.rend(); ++p) {
+		for (auto p = dt.rbegin(); p != dt.rend(); ++p) {
 			if (p->second.data >= 0 && p->second.date && p->first != "") {
 				string s = rename(p->first);
 				if (p->first[p->first.size() - 1] == '/')
@@ -3525,12 +3525,12 @@ int Jidac::list() {
 	// Compute directory sizes as the sum of their contents
 	DTMap* dp[2] = { &dt, &edt };
 	for (int i = 0; i < 2; ++i) {
-		for (DTMap::iterator p = dp[i]->begin(); p != dp[i]->end(); ++p) {
+		for (auto p = dp[i]->begin(); p != dp[i]->end(); ++p) {
 			int len = p->first.size();
 			if (len > 0 && p->first[len] != '/') {
 				for (int j = 0; j < len; ++j) {
 					if (p->first[j] == '/') {
-						DTMap::iterator q = dp[i]->find(p->first.substr(0, j + 1));
+						auto q = dp[i]->find(p->first.substr(0, j + 1));
 						if (q != dp[i]->end())
 							q->second.size += p->second.size;
 					}
@@ -3543,8 +3543,8 @@ int Jidac::list() {
 	// by the matching internal file, if any. Then list any unmatched
 	// internal files at the end.
 	vector<DTMap::iterator> filelist;
-	for (DTMap::iterator p = edt.begin(); p != edt.end(); ++p) {
-		DTMap::iterator a = dt.find(rename(p->first));
+	for (auto p = edt.begin(); p != edt.end(); ++p) {
+		auto a = dt.find(rename(p->first));
 		if (a != dt.end() && (all || a->second.date)) {
 			a->second.data = '-';
 			filelist.push_back(a);
@@ -3552,7 +3552,7 @@ int Jidac::list() {
 		p->second.data = '+';
 		filelist.push_back(p);
 	}
-	for (DTMap::iterator a = dt.begin(); a != dt.end(); ++a) {
+	for (auto a = dt.begin(); a != dt.end(); ++a) {
 		if (a->second.data != '-' && (all || a->second.date)) {
 			a->second.data = '-';
 			filelist.push_back(a);
@@ -3569,7 +3569,7 @@ int Jidac::list() {
 		duplicates = 0;  // counts
 	for (unsigned fi = 0;
 		fi < filelist.size() && (summary <= 0 || int(fi) < summary); ++fi) {
-		DTMap::iterator p = filelist[fi];
+		auto p = filelist[fi];
 
 		// Compare external files
 		if (summary <= 0 && p->second.data == '-' && fi + 1 < filelist.size()

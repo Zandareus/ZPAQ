@@ -143,7 +143,7 @@ namespace libzpaq {
 
 	// Hash buf[0..n-1]
 	void SHA1::write(const char* buf, int64_t n) {
-		const unsigned char* p = (const unsigned char*)buf;
+		const auto* p = (const unsigned char*)buf;
 		for (; n > 0 && (U32(len) & 511) != 0; --n) put(*p++);
 		for (; n >= 64; n -= 64) {
 			for (int i = 0; i < 16; ++i)
@@ -323,7 +323,7 @@ namespace libzpaq {
 
 	// x = y[0..3] MSB first
 	static inline void LOAD32H(U32& x, const char* y) {
-		const unsigned char* u = (const unsigned char*)y;
+		const auto* u = (const unsigned char*)y;
 		x = u[0] << 24 | u[1] << 16 | u[2] << 8 | u[3];
 	}
 
@@ -1904,7 +1904,7 @@ namespace libzpaq {
 				cr.cxt = h[i] + (c8 & cp[5]);
 				cr.cxt = (cr.cxt & (cr.c - 1)) * m; // pointer to row of weights
 				assert(cr.cxt <= cr.cm.size() - m);
-				int* wt = (int*)&cr.cm[cr.cxt];
+				auto* wt = (int*)&cr.cm[cr.cxt];
 				p[i] = 0;
 				for (int j = 0; j < m; ++j)
 					p[i] += (wt[j] >> 8) * p[cp[2] + j];
@@ -1916,7 +1916,7 @@ namespace libzpaq {
 				if (c8 == 1 || (c8 & 0xf0) == 16)
 					cr.c = find(cr.ht, cp[1] + 2, h[i] + 16 * c8);
 				cr.cxt = cr.ht[cr.c + (hmap4 & 15)];  // bit history
-				int* wt = (int*)&cr.cm[cr.cxt * 2];
+				auto* wt = (int*)&cr.cm[cr.cxt * 2];
 				p[i] = clamp2k((wt[0] * p[cp[2]] + wt[1] * 64) >> 16);
 			}
 					 break;
@@ -2019,7 +2019,7 @@ namespace libzpaq {
 				assert(cr.cm.size() == m * cr.c);
 				assert(cr.cxt + m <= cr.cm.size());
 				int err = (y * 32767 - squash(p[i])) * cp[4] >> 4;
-				int* wt = (int*)&cr.cm[cr.cxt];
+				auto* wt = (int*)&cr.cm[cr.cxt];
 				for (int j = 0; j < m; ++j)
 					wt[j] = clamp512k(wt[j] + ((err * p[cp[2] + j] + (1 << 12)) >> 13));
 			}
@@ -2027,7 +2027,7 @@ namespace libzpaq {
 			case ISSE: { // sizebits j  -- c=hi, cxt=bh
 				assert(cr.cxt == cr.ht[cr.c + (hmap4 & 15)]);
 				int err = y * 32767 - squash(p[i]);
-				int* wt = (int*)&cr.cm[cr.cxt * 2];
+				auto* wt = (int*)&cr.cm[cr.cxt * 2];
 				wt[0] = clamp512k(wt[0] + ((err * p[cp[2]] + (1 << 12)) >> 13));
 				wt[1] = clamp512k(wt[1] + ((err + 16) >> 5));
 				cr.ht[cr.c + (hmap4 & 15)] = st.next(cr.cxt, y);
@@ -2708,7 +2708,7 @@ namespace libzpaq {
 		hz.cend = 7;
 		for (int i = 0; i < n; ++i) {
 			rtoken(i, i);
-			CompType type = CompType(rtoken(compname));
+			auto type = CompType(rtoken(compname));
 			hz.header[hz.cend++] = type;
 			int clen = libzpaq::compsize[type & 255];
 			if (clen < 1 || clen>10) syntaxError("invalid component");
@@ -5193,7 +5193,7 @@ In 64 bit mode, the following additional registers are used:
 						a -= 1, b = middle - 1;
 						t = *a;
 					}
-				} while (1);
+				} while (true);
 			}
 			else {
 				a = first, b = middle;
@@ -5207,7 +5207,7 @@ In 64 bit mode, the following additional registers are used:
 						a += 1, b = middle;
 						t = *a;
 					}
-				} while (1);
+				} while (true);
 			}
 		}
 	}
