@@ -75,7 +75,7 @@ namespace libzpaq {
 #else // Windows
 				VirtualFree(p, 0, MEM_RELEASE);
 #endif
-			p = 0;
+			p = nullptr;
 			n = 0;
 		}
 		if (newsize > 0) {
@@ -84,7 +84,7 @@ namespace libzpaq {
 				MAP_PRIVATE | MAP_ANON, -1, 0);
 			if ((void*)p == MAP_FAILED) p = 0;
 #else
-			p = (U8*)VirtualAlloc(0, newsize, MEM_RESERVE | MEM_COMMIT,
+			p = (U8*)VirtualAlloc(nullptr, newsize, MEM_RESERVE | MEM_COMMIT,
 				PAGE_EXECUTE_READWRITE);
 #endif
 			if (p)
@@ -688,7 +688,7 @@ namespace libzpaq {
 		}
 #else
 		HCRYPTPROV h;
-		if (CryptAcquireContext(&h, NULL, NULL, PROV_RSA_FULL,
+		if (CryptAcquireContext(&h, nullptr, nullptr, PROV_RSA_FULL,
 			CRYPT_VERIFYCONTEXT) && CryptGenRandom(h, n, (BYTE*)buf))
 			CryptReleaseContext(h, 0);
 		else {
@@ -936,9 +936,9 @@ namespace libzpaq {
 
 	// Constructor
 	ZPAQL::ZPAQL() {
-		output = 0;
-		sha1 = 0;
-		rcode = 0;
+		output = nullptr;
+		sha1 = nullptr;
+		rcode = nullptr;
 		rcode_size = 0;
 		clear();
 		outbuf.resize(1 << 14);
@@ -1705,7 +1705,7 @@ namespace libzpaq {
 		assert(sizeof(U64) == 8);
 		assert(sizeof(short) == 2);
 		assert(sizeof(int) == 4);
-		pcode = 0;
+		pcode = nullptr;
 		pcode_size = 0;
 		initTables = false;
 	}
@@ -2084,7 +2084,7 @@ namespace libzpaq {
 	/////////////////////// Decoder ///////////////////////
 
 	Decoder::Decoder(ZPAQL& z) :
-		in(0), low(1), high(0xFFFFFFFF), curr(0), rpos(0), wpos(0),
+		in(nullptr), low(1), high(0xFFFFFFFF), curr(0), rpos(0), wpos(0),
 		pr(z), buf(BUFSIZE) {
 	}
 
@@ -2444,7 +2444,7 @@ namespace libzpaq {
 
 	// Component names
 	const char* compname[256] =
-	{ "","const","cm","icm","match","avg","mix2","mix","isse","sse",0 };
+	{ "","const","cm","icm","match","avg","mix2","mix","isse","sse",nullptr };
 
 	// Opcodes
 	const char* opcodelist[272] = {
@@ -2481,7 +2481,7 @@ namespace libzpaq {
 	"",     "",     "",     "",     "",     "",     "",     "",
 	"",     "",     "",     "",     "",     "",     "",     "lj",
 	"post", "pcomp","end",  "if",   "ifnot","else", "endif","do",
-	"while","until","forever","ifl","ifnotl","elsel",";",    0 };
+	"while","until","forever","ifl","ifnotl","elsel",";",    nullptr };
 
 	// Advance in to start of next token. Tokens are delimited by white
 	// space. Comments inclosed in ((nested) parenthsis) are skipped.
@@ -2986,7 +2986,7 @@ namespace libzpaq {
 		else
 			enc.out->put(254);
 		state = BLOCK2;
-		return verify ? sha1result : 0;
+		return verify ? sha1result : nullptr;
 	}
 
 	// End block
@@ -3011,13 +3011,13 @@ namespace libzpaq {
 
 		// Compress in blocks
 		StringBuffer sb(bs);
-		sb.write(0, bs);
+		sb.write(nullptr, bs);
 		int n = 0;
 		while (in && (n = in->read((char*)sb.data(), bs)) > 0) {
 			sb.resize(n);
 			compressBlock(&sb, out, method, filename, comment, dosha1);
-			filename = 0;
-			comment = 0;
+			filename = nullptr;
+			comment = nullptr;
 			sb.resize(0);
 		}
 	}
@@ -6268,7 +6268,7 @@ In 64 bit mode, the following additional registers are used:
 			for (c1 = ALPHABET_SIZE - 2; 0 <= c1; --c1) {
 				/* Scan the suffix array from right to left. */
 				for (i = SA + BUCKET_BSTAR(c1, c1 + 1),
-					j = SA + BUCKET_A(c1 + 1) - 1, k = NULL, c2 = -1;
+					j = SA + BUCKET_A(c1 + 1) - 1, k = nullptr, c2 = -1;
 					i <= j;
 					--j) {
 					if (0 < (s = *j)) {
@@ -6334,7 +6334,7 @@ In 64 bit mode, the following additional registers are used:
 			for (c1 = ALPHABET_SIZE - 2; 0 <= c1; --c1) {
 				/* Scan the suffix array from right to left. */
 				for (i = SA + BUCKET_BSTAR(c1, c1 + 1),
-					j = SA + BUCKET_A(c1 + 1) - 1, k = NULL, c2 = -1;
+					j = SA + BUCKET_A(c1 + 1) - 1, k = nullptr, c2 = -1;
 					i <= j;
 					--j) {
 					if (0 < (s = *j)) {
@@ -6403,7 +6403,7 @@ In 64 bit mode, the following additional registers are used:
 		int err = 0;
 
 		/* Check arguments. */
-		if ((T == NULL) || (SA == NULL) || (n < 0)) { return -1; }
+		if ((T == nullptr) || (SA == nullptr) || (n < 0)) { return -1; }
 		else if (n == 0) { return 0; }
 		else if (n == 1) { SA[0] = 0; return 0; }
 		else if (n == 2) { m = (T[0] < T[1]); SA[m ^ 1] = 0, SA[m] = 1; return 0; }
@@ -6412,7 +6412,7 @@ In 64 bit mode, the following additional registers are used:
 		bucket_B = (int*)malloc(BUCKET_B_SIZE * sizeof(int));
 
 		/* Suffixsort. */
-		if ((bucket_A != NULL) && (bucket_B != NULL)) {
+		if ((bucket_A != nullptr) && (bucket_B != nullptr)) {
 			m = sort_typeBstar(T, SA, bucket_A, bucket_B, n);
 			construct_SA(T, SA, bucket_A, bucket_B, n, m);
 		}
@@ -6433,15 +6433,15 @@ In 64 bit mode, the following additional registers are used:
 		int m, pidx, i;
 
 		/* Check arguments. */
-		if ((T == NULL) || (U == NULL) || (n < 0)) { return -1; }
+		if ((T == nullptr) || (U == nullptr) || (n < 0)) { return -1; }
 		else if (n <= 1) { if (n == 1) { U[0] = T[0]; } return n; }
 
-		if ((B = A) == NULL) { B = (int*)malloc((size_t)(n + 1) * sizeof(int)); }
+		if ((B = A) == nullptr) { B = (int*)malloc((size_t)(n + 1) * sizeof(int)); }
 		bucket_A = (int*)malloc(BUCKET_A_SIZE * sizeof(int));
 		bucket_B = (int*)malloc(BUCKET_B_SIZE * sizeof(int));
 
 		/* Burrows-Wheeler Transform. */
-		if ((B != NULL) && (bucket_A != NULL) && (bucket_B != NULL)) {
+		if ((B != nullptr) && (bucket_A != nullptr) && (bucket_B != nullptr)) {
 			m = sort_typeBstar(T, B, bucket_A, bucket_B, n);
 			pidx = construct_BWT(T, B, bucket_A, bucket_B, n, m);
 
@@ -6457,7 +6457,7 @@ In 64 bit mode, the following additional registers are used:
 
 		free(bucket_B);
 		free(bucket_A);
-		if (A == NULL) { free(B); }
+		if (A == nullptr) { free(B); }
 
 		return pidx;
 	}
@@ -6557,7 +6557,7 @@ In 64 bit mode, the following additional registers are used:
 		}
 
 	public:
-		LZBuffer(StringBuffer& inbuf, int args[], const unsigned* sap = 0);
+		LZBuffer(StringBuffer& inbuf, int args[], const unsigned* sap = nullptr);
 
 		// return 1 byte of compressed output (overrides Reader)
 		int get() {
@@ -6646,7 +6646,7 @@ In 64 bit mode, the following additional registers are used:
 		minMatchBoth(MAX(minMatch, minMatch2 + lookahead) + 4),
 		rb(args[0] > 4 ? args[0] - 4 : 0),
 		bits(0), nbits(0), rpos(0), wpos(0),
-		idx(0), sa(0), isa(0) {
+		idx(0), sa(nullptr), isa(nullptr) {
 		assert(args[0] >= 0);
 		assert(n <= (1u << 20 << args[0]));
 		assert(args[1] >= 1 && args[1] <= 7 && args[1] != 4);
@@ -6669,7 +6669,7 @@ In 64 bit mode, the following additional registers are used:
 			}
 			if (level < 3) {
 				assert(ht.size() >= (n * (sap == 0)) + (1u << 17 << args[0]));
-				isa = &ht[n * (sap == 0)];
+				isa = &ht[n * (sap == nullptr)];
 			}
 		}
 	}
@@ -7593,7 +7593,7 @@ In 64 bit mode, the following additional registers are used:
 
 		// Get hash of input
 		libzpaq::SHA1 sha1;
-		const char* sha1ptr = 0;
+		const char* sha1ptr = nullptr;
 #ifdef DEBUG
 		if (true) {
 #else

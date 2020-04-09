@@ -283,7 +283,7 @@ void printUTF8(const char* s, FILE* f = stdout) {
 		fflush(f);
 		std::wstring w = utow(s, '/');  // Windows console: convert to UTF-16
 		DWORD n = 0;
-		WriteConsole(h, w.c_str(), w.size(), &n, 0);
+		WriteConsole(h, w.c_str(), w.size(), &n, nullptr);
 	}
 	else  // stdout redirected to file
 		fprintf(f, "%s", s);
@@ -746,8 +746,8 @@ class OutputArchive : public ArchiveBase, public libzpaq::Writer {
 public:
 
 	// Open. If password then encrypt output.
-	OutputArchive(const char* filename, const char* password = 0,
-		const char* salt_ = 0, int64_t off_ = 0);
+	OutputArchive(const char* filename, const char* password = nullptr,
+		const char* salt_ = nullptr, int64_t off_ = 0);
 
 	// Write pending output
 	void flush() {
@@ -1330,7 +1330,7 @@ int Jidac::doCommand(int argc, const char** argv) {
 	// Load dynamic functions in Windows Vista and later
 #ifndef unix
 	HMODULE h = GetModuleHandle(TEXT("kernel32.dll"));
-	if (h == NULL) printerr("GetModuleHandle");
+	if (h == nullptr) printerr("GetModuleHandle");
 	else {
 		findFirstStreamW =
 			(FindFirstStreamW_t)GetProcAddress(h, "FindFirstStreamW");
@@ -1388,7 +1388,7 @@ int64_t Jidac::read_archive(const char* arc, int* errors) {
 	string lastfile = archive; // last named file in streaming format
 	if (lastfile.size() > 5 && lastfile.substr(lastfile.size() - 5) == ".zpaq")
 		lastfile = lastfile.substr(0, lastfile.size() - 5); // drop .zpaq
-	int64_t block_offset = 32 * (password != 0);  // start of last block of any type
+	int64_t block_offset = 32 * (password != nullptr);  // start of last block of any type
 	int64_t data_offset = block_offset;    // start of last block of d fragments
 	bool found_data = false;   // exit if nothing found
 	bool first = true;         // first segment in archive?
@@ -1640,7 +1640,7 @@ int64_t Jidac::read_archive(const char* arc, int* errors) {
 		}
 	endblock:;
 	}  // end while !done
-	if (in.tell() > 32 * (password != 0) && !found_data)
+	if (in.tell() > 32 * (password != nullptr) && !found_data)
 		error("archive contains no data");
 	printf("%d versions, %u files, %u fragments, %1.6f MB\n",
 		int(ver.size() - 1), files, unsigned(ht.size()) - 1,
@@ -2708,7 +2708,7 @@ int Jidac::add() {
 // If filename is 0 then return true if it is possible to compare.
 bool Jidac::equal(DTMap::const_iterator p, const char* filename) {
 	// test if all fragment sizes and hashes exist
-	if (filename == 0) {
+	if (filename == nullptr) {
 		static const char zero[20] = { 0 };
 		for (unsigned i = 0; i < p->second.ptr.size(); ++i) {
 			unsigned j = p->second.ptr[i];
