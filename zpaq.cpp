@@ -1210,7 +1210,7 @@ int Jidac::doCommand(int argc, const char** argv) {
 			const char* dot = strrchr(slash ? slash : argv[i], '.');
 			if (!dot && !archive.empty()) archive += ".zpaq";
 			while (++i < argc && argv[i][0] != '-')  // read filename args
-				files.push_back(argv[i]);
+				files.emplace_back(argv[i]);
 			--i;
 		}
 		else if (opt.size() < 2 || opt[0] != '-') usage();
@@ -1233,13 +1233,13 @@ int Jidac::doCommand(int argc, const char** argv) {
 		else if (opt == "-not") {  // read notfiles
 			while (++i < argc && argv[i][0] != '-') {
 				if (argv[i][0] == '=') nottype = argv[i];
-				else notfiles.push_back(argv[i]);
+				else notfiles.emplace_back(argv[i]);
 			}
 			--i;
 		}
 		else if (opt == "-only") {  // read onlyfiles
 			while (++i < argc && argv[i][0] != '-')
-				onlyfiles.push_back(argv[i]);
+				onlyfiles.emplace_back(argv[i]);
 			--i;
 		}
 		else if (opt == "-repack" && i < argc - 1) {
@@ -1256,8 +1256,8 @@ int Jidac::doCommand(int argc, const char** argv) {
 		else if (opt == "-test") dotest = true;
 		else if (opt == "-to") {  // read tofiles
 			while (++i < argc && argv[i][0] != '-')
-				tofiles.push_back(argv[i]);
-			if (tofiles.empty()) tofiles.push_back("");
+				tofiles.emplace_back(argv[i]);
+			if (tofiles.empty()) tofiles.emplace_back("");
 			--i;
 		}
 		else if (opt == "-threads" && i < argc - 1) threads = atoi(argv[++i]);
@@ -1485,7 +1485,7 @@ int64_t Jidac::read_archive(const char* arc, int* errors) {
 							else {
 								dcsize += jmp;
 								if (jmp) in.seek(data_offset + jmp, SEEK_SET);
-								ver.push_back(VER());
+								ver.emplace_back();
 								ver.back().firstFragment = ht.size();
 								ver.back().offset = block_offset;
 								ver.back().data_offset = data_offset;
@@ -1524,12 +1524,12 @@ int64_t Jidac::read_archive(const char* arc, int* errors) {
 							}
 							for (unsigned i = 0; i < n; ++i) {
 								if (i == 0) {
-									block.push_back(Block(num, data_offset));
+									block.emplace_back(num, data_offset);
 									block.back().usize = 8;
 									block.back().bsize = bsize;
 									block.back().frags = os.size() / 24;
 								}
-								while (int64_t(ht.size()) <= num + i) ht.push_back(HT());
+								while (int64_t(ht.size()) <= num + i) ht.emplace_back();
 								memcpy(ht[num + i].sha1, s, 20);
 								s += 20;
 								assert(block.size() > 0);
@@ -1596,7 +1596,7 @@ int64_t Jidac::read_archive(const char* arc, int* errors) {
 								done = true;
 								goto endblock;
 							}
-							ver.push_back(VER());
+							ver.emplace_back();
 							ver.back().firstFragment = ht.size();
 							ver.back().offset = block_offset;
 							ver.back().csize = -1;
@@ -1620,9 +1620,9 @@ int64_t Jidac::read_archive(const char* arc, int* errors) {
 						}
 						assert(ver.size() > 0);
 						if (segs == 0 || block.empty())
-							block.push_back(Block(ht.size(), block_offset));
+							block.emplace_back(ht.size(), block_offset);
 						assert(block.size() > 0);
-						ht.push_back(HT(sha1result + 1, -1));
+						ht.emplace_back(sha1result + 1, -1);
 					}  // end else streaming
 					++segs;
 					filename.s = "";
@@ -2523,13 +2523,13 @@ int Jidac::add() {
 					memmove(o1prev, o1prev + 256, 256 * (ON - 1));
 					memcpy(o1prev + 256 * (ON - 1), o1, 256);
 				}
-			}  // end if frag not matched or last block
+			}  // end if fragment not matched or last block
 
 			// Update HT and ptr list
 			if (fi < vf.size()) {
 				if (htptr == 0) {
 					htptr = ht.size();
-					ht.push_back(HT(sha1result, sz));
+					ht.emplace_back(sha1result, sz);
 					htinv.update();
 					fsize += sz;
 				}
