@@ -641,14 +641,14 @@ public:
 	InputArchive(const char* filename, const char* password = nullptr);
 
 	// Read and return 1 byte or -1 (EOF)
-	int get() {
+	int get() override {
 		error("get() not implemented");
 		return -1;
 	}
 
 	// Read up to len bytes into obuf at current offset. Return 0..len bytes
 	// actually read. 0 indicates EOF.
-	int read(char* obuf, int len) {
+	int read(char* obuf, int len) override {
 		int nr = fread(obuf, 1, len, fp);
 		if (nr == 0) {
 			seek(0, SEEK_CUR);
@@ -775,7 +775,7 @@ public:
 	}
 
 	// Write one byte
-	void put(int c) {
+	void put(int c) override {
 		if (fp == FPNULL) ++off;
 		else {
 			if (ptr >= BUFSIZE) flush();
@@ -784,7 +784,7 @@ public:
 	}
 
 	// Write buf[0..n-1]
-	void write(const char* ibuf, int len) {
+	void write(const char* ibuf, int len) override {
 		if (fp == FPNULL) off += len;
 		else while (len-- > 0) put(*ibuf++);
 	}
@@ -890,7 +890,7 @@ int numberOfProcessors() {
 // For libzpaq output to a string less than 64K chars
 struct StringWriter : public libzpaq::Writer {
 	string s;
-	void put(int c) {
+	void put(int c) override {
 		if (s.size() >= 65535) error("string too long");
 		s += char(c);
 	}
@@ -2085,11 +2085,11 @@ bool compareFilename(DTMap::iterator ap, DTMap::iterator bp) {
 // For writing to two archives at once
 struct WriterPair : public libzpaq::Writer {
 	OutputArchive* a, * b;
-	void put(int c) {
+	void put(int c) override {
 		if (a) a->put(c);
 		if (b) b->put(c);
 	}
-	void write(const char* buf, int n) {
+	void write(const char* buf, int n) override {
 		if (a) a->write(buf, n);
 		if (b) b->write(buf, n);
 	}
@@ -2264,7 +2264,7 @@ int Jidac::add() {
 	int64_t dedupesize = 0;  // input size after dedupe
 	if (method[0] == 's') {
 		StringBuffer sb(blocksize + 4096 - 128);
-		for (DTMap::iterator p : vf) {
+		for (auto p : vf) {
 			print_progress(total_size, total_done, summary);
 			if (summary <= 0) {
 				printf("+ ");
@@ -3059,11 +3059,11 @@ ThreadReturn decompressThread(void* arg) {
 // Streaming output destination
 struct OutputFile : public libzpaq::Writer {
 	FP f;
-	void put(int c) {
+	void put(int c) override {
 		char ch = c;
 		if (f != FPNULL) fwrite(&ch, 1, 1, f);
 	}
-	void write(const char* buf, int n) { if (f != FPNULL) fwrite(buf, 1, n, f); }
+	void write(const char* buf, int n) override { if (f != FPNULL) fwrite(buf, 1, n, f); }
 	OutputFile(FP out = FPNULL) : f(out) {}
 };
 
@@ -3643,8 +3643,7 @@ int Jidac::list() {
 	for (const auto& p : dt) {
 		if (p.second.date) {
 			++nfiles;
-			for (unsigned j = 0; j < p.second.ptr.size(); ++j) {
-				unsigned k = p.second.ptr[j];
+			for (unsigned int k : p.second.ptr) {
 				if (k > 0 && k < ht.size()) {
 					++refs;
 					if (ht[k].usize >= 0) allsize += ht[k].usize;

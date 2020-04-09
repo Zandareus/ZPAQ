@@ -2829,7 +2829,7 @@ namespace libzpaq {
 		const char* p;
 	public:
 		MemoryReader(const char* p_) : p(p_) {}
-		int get() { return *p++ & 255; }
+		int get() override { return *p++ & 255; }
 	};
 
 	void Compressor::startBlock(const char* hcomp) {
@@ -6561,7 +6561,7 @@ In 64 bit mode, the following additional registers are used:
 		LZBuffer(StringBuffer& inbuf, int args[], const unsigned* sap = nullptr);
 
 		// return 1 byte of compressed output (overrides Reader)
-		int get() {
+		int get() override {
 			int c = -1;
 			if (rpos == wpos) fill();
 			if (rpos < wpos) c = buf[rpos++];
@@ -6570,7 +6570,7 @@ In 64 bit mode, the following additional registers are used:
 		}
 
 		// Read up to p[0..n-1] and return bytes read.
-		int read(char* p, int n);
+		int read(char* p, int n) override;
 	};
 
 	// LZ/BWT preprocessor for levels 1..3 compression and e8e9 filter.
