@@ -881,9 +881,10 @@ namespace libzpaq {
 		T* data;     // user location of [0] on a 64 byte boundary
 		size_t n;    // user size
 		int offset;  // distance back in bytes to start of actual allocation
-		void operator=(const Array&);  // no assignment
 		Array(const Array&);  // no copy
 	public:
+		void operator=(const Array&) = delete;  // no assignment
+
 		Array(size_t sz = 0, int ex = 0) : data(nullptr), n(0), offset(0) {
 			resize(sz, ex);
 		} // [0..sz-1] = 0
@@ -939,10 +940,10 @@ namespace libzpaq {
 		SHA1() { init(); }
 	private:
 		void init();      // reset, but don't clear hbuf
-		U64 len;          // length in bits
-		U32 h[5];         // hash state
-		U32 w[16];        // input buffer
-		char hbuf[20];    // result
+		U64 len{};          // length in bits
+		U32 h[5]{};         // hash state
+		U32 w[16]{};        // input buffer
+		char hbuf[20]{};    // result
 		void process();   // hash 1 block
 	};
 
@@ -964,10 +965,10 @@ namespace libzpaq {
 		SHA256() { init(); }
 	private:
 		void init();           // reset, but don't clear hbuf
-		unsigned len0, len1;   // length in bits (low, high)
-		unsigned s[8];         // hash state
-		unsigned w[16];        // input buffer
-		char hbuf[32];         // result
+		unsigned len0{}, len1{};   // length in bits (low, high)
+		unsigned s[8]{};         // hash state
+		unsigned w[16]{};        // input buffer
+		char hbuf[32]{};         // result
 		void process();        // hash 1 block
 	};
 
@@ -977,8 +978,8 @@ namespace libzpaq {
 	// The i'th 16 byte block is encrypted by XOR with AES(i)
 	// (i is big endian or MSB first, starting with 0).
 	class AES_CTR {
-		U32 Te0[256], Te1[256], Te2[256], Te3[256], Te4[256]; // encryption tables
-		U32 ek[60];  // round key
+		U32 Te0[256]{}, Te1[256]{}, Te2[256]{}, Te3[256]{}, Te4[256]{}; // encryption tables
+		U32 ek[60]{};  // round key
 		int Nr;  // number of rounds (10, 12, 14 for AES 128, 192, 256)
 		U32 iv0, iv1;  // first 8 bytes in CTR mode
 	public:
@@ -1039,8 +1040,8 @@ namespace libzpaq {
 
 		// ZPAQ1 block header
 		Array<U8> header;   // hsize[2] hh hm ph pm n COMP (guard) HCOMP (guard)
-		int cend;           // COMP in header[7...cend-1]
-		int hbegin, hend;   // HCOMP/PCOMP in header[hbegin...hend-1]
+		int cend{};           // COMP in header[7...cend-1]
+		int hbegin{}, hend{};   // HCOMP/PCOMP in header[hbegin...hend-1]
 
 	private:
 		// Machine state for executing HCOMP
@@ -1049,9 +1050,9 @@ namespace libzpaq {
 		Array<U32> r;       // 256 element register array
 		Array<char> outbuf; // output buffer
 		int bufptr;         // number of bytes in outbuf
-		U32 a, b, c, d;     // machine registers
-		int f;              // condition flag
-		int pc;             // program counter
+		U32 a{}, b{}, c{}, d{};     // machine registers
+		int f{};              // condition flag
+		int pc{};             // program counter
 		int rcode_size;     // length of rcode
 		U8* rcode;          // JIT code for run()
 
@@ -1075,9 +1076,9 @@ namespace libzpaq {
 	// or SSE (without or with).
 
 	struct Component {
-		size_t limit;   // max count for cm
-		size_t cxt;     // saved context
-		size_t a, b, c; // multi-purpose variables
+		size_t limit{};   // max count for cm
+		size_t cxt{};     // saved context
+		size_t a{}, b{}, c{}; // multi-purpose variables
 		Array<U32> cm;  // cm[cxt] -> p in bits 31..10, n in 9..0; MATCH index
 		Array<U8> ht;   // ICM/ISSE hash table[0..size1][0..15] and MATCH buf
 		Array<U16> a16; // MIX weights
@@ -1090,7 +1091,7 @@ namespace libzpaq {
 	// Next state table
 	class StateTable {
 	public:
-		U8 ns[1024]; // state*4 -> next state if 0, if 1, n0, n1
+		U8 ns[1024]{}; // state*4 -> next state if 0, if 1, n0, n1
 		int next(int state, int y) {  // next state for bit y
 			assert(state >= 0 && state < 256);
 			assert(y >= 0 && y < 4);
@@ -1123,8 +1124,8 @@ namespace libzpaq {
 		// Predictor state
 		int c8;               // last 0...7 bits.
 		int hmap4;            // c8 split into nibbles
-		int p[256];           // predictions
-		U32 h[256];           // unrolled copy of z.h
+		int p[256]{};           // predictions
+		U32 h[256]{};           // unrolled copy of z.h
 		ZPAQL& z;             // VM to compute context hashes, includes H, n
 		Component comp[256];  // the model, includes P
 		bool initTables;      // are tables initialized?
@@ -1132,10 +1133,10 @@ namespace libzpaq {
 		// Modeling support functions
 		int predict0();       // default
 		void update0(int y);  // default
-		int dt2k[256];        // division table for match: dt2k[i] = 2^12/i
-		int dt[1024];         // division table for cm: dt[i] = 2^16/(i+1.5)
-		U16 squasht[4096];    // squash() lookup table
-		short stretcht[32768];// stretch() lookup table
+		int dt2k[256]{};        // division table for match: dt2k[i] = 2^12/i
+		int dt[1024]{};         // division table for cm: dt[i] = 2^16/(i+1.5)
+		U16 squasht[4096]{};    // squash() lookup table
+		short stretcht[32768]{};// stretch() lookup table
 		StateTable st;        // next, cminit functions
 		U8* pcode;            // JIT code for predict() and update()
 		int pcode_size;       // length of pcode
@@ -1145,7 +1146,7 @@ namespace libzpaq {
 			assert(y == 0 || y == 1);
 			U32& pn = cr.cm(cr.cxt);
 			U32 count = pn & 0x3ff;
-			int error = y * 32767 - (cr.cm(cr.cxt) >> 17);
+			const int error = y * 32767 - (cr.cm(cr.cxt) >> 17);
 			pn += (error * dt[count] & -1024) + (count < cr.limit);
 		}
 
@@ -1360,7 +1361,7 @@ namespace libzpaq {
 		Encoder enc;  // arithmetic encoder containing predictor
 		Reader* in;   // input source
 		SHA1 sha1;    // to test pz output
-		char sha1result[20];  // sha1 output
+		char sha1result[20]{};  // sha1 output
 		enum { INIT, BLOCK1, SEG1, BLOCK2, SEG2 } state;
 		bool verify;  // if true then test by postprocessing
 	};
@@ -1479,7 +1480,8 @@ namespace libzpaq {
 		}
 
 		// Swap efficiently (init is not swapped)
-		void swap(StringBuffer& s) {
+		void swap(StringBuffer& s) noexcept
+		{
 			std::swap(p, s.p);
 			std::swap(al, s.al);
 			std::swap(wpos, s.wpos);

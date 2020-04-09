@@ -859,7 +859,7 @@ namespace libzpaq {
 	/////////////////////////// ZPAQL //////////////////////////
 
 	// Write header to out2, return true if HCOMP/PCOMP section is present.
-	// If pp is true, then write only the postprocessor code.
+	// If pp is true, then write only the post processor code.
 	bool ZPAQL::write(Writer* out2, bool pp) {
 		if (header.size() <= 6) return false;
 		assert(header[0] + 256 * header[1] == cend - 2 + hend - hbegin);
@@ -867,7 +867,7 @@ namespace libzpaq {
 		assert(hbegin >= cend);
 		assert(hend >= hbegin);
 		assert(out2);
-		if (!pp) {  // if not a postprocessor then write COMP
+		if (!pp) {  // if not a post processor then write COMP
 			for (int i = 0; i < cend; ++i)
 				out2->put(header[i]);
 		}
@@ -986,11 +986,11 @@ namespace libzpaq {
 		int cp = 7;  // start of comp list
 		for (int i = 0; i < header[6]; ++i) {  // n
 			assert(cp < cend);
-			double size = pow2(header[cp + 1]); // sizebits
+			const double size = pow2(header[cp + 1]); // size bits
 			switch (header[cp]) {
 			case CM: mem += 4 * size; break;
 			case ICM: mem += 64 * size + 1024; break;
-			case MATCH: mem += 4 * size + pow2(header[cp + 2]); break; // bufbits
+			case MATCH: mem += 4 * size + pow2(header[cp + 2]); break; // buf bits
 			case MIX2: mem += 2 * size; break;
 			case MIX: mem += 4 * size * header[cp + 3]; break; // m
 			case ISSE: mem += 64 * size + 2048; break;
@@ -2568,8 +2568,8 @@ namespace libzpaq {
 	// Compile HCOMP or PCOMP code. Exit on error. Return
 	// code for end token (POST, PCOMP, END)
 	int Compiler::compile_comp(ZPAQL& z) {
-		int op = 0;
-		const int comp_begin = z.hend;
+		auto op = 0;
+		const auto comp_begin = z.hend;
 		while (true) {
 			op = rtoken(opcodelist);
 			if (op == POST || op == PCOMP || op == END) break;
@@ -3013,8 +3013,8 @@ namespace libzpaq {
 		// Compress in blocks
 		StringBuffer sb(bs);
 		sb.write(nullptr, bs);
-		int n = 0;
-		while (in && (n = in->read((char*)sb.data(), bs)) > 0) {
+		auto n = 0;
+		while (in && (n = in->read(reinterpret_cast<char*>(sb.data()), bs)) > 0) {
 			sb.resize(n);
 			compressBlock(&sb, out, method, filename, comment, dosha1);
 			filename = nullptr;
@@ -3225,7 +3225,7 @@ In 64 bit mode, the following additional registers are used:
 		// x86? (not foolproof)
 		const int S = sizeof(char*);      // 4 = x86, 8 = x86-64
 		U32 t = 0x12345678;
-		if (*(char*)&t != 0x78 || (S != 4 && S != 8))
+		if (*reinterpret_cast<char*>(&t) != 0x78 || (S != 4 && S != 8))
 			error("JIT supported only for x86-32 and x86-64");
 
 		const U8* hcomp = &header[hbegin];
@@ -3825,7 +3825,7 @@ In 64 bit mode, the following additional registers are used:
 
   // test for little-endian (probably x86)
 		U32 t = 0x12345678;
-		if (*(char*)&t != 0x78 || (S != 4 && S != 8))
+		if (*reinterpret_cast<char*>(&t) != 0x78 || (S != 4 && S != 8))
 			error("JIT supported only for x86-32 and x86-64");
 
 		// Initialize for predict(). Put predictor address in edi/rdi
@@ -6527,7 +6527,7 @@ In 64 bit mode, the following additional registers are used:
 		const unsigned* sa;         // suffix array for BWT or LZ77-SA
 		unsigned* isa;              // inverse suffix array for LZ77-SA
 		enum { BUFSIZE = 1 << 14 };       // output buffer size
-		unsigned char buf[BUFSIZE]; // output buffer
+		unsigned char buf[BUFSIZE]{}; // output buffer
 
 		void write_literal(unsigned i, unsigned& lit);
 		void write_match(unsigned len, unsigned off);
@@ -6763,7 +6763,7 @@ In 64 bit mode, the following additional registers are used:
 							if (p < i && i + blen <= n && in[p + blen - 1] == in[i + blen - 1]) {
 								unsigned l;
 								for (l = 0; i + l < n && l < maxMatch && in[p + l] == in[i + l]; ++l);
-								int score = l * 8 - lg(i - p) - 2 * (lit > 0) - 11;
+								const int score = l * 8 - lg(i - p) - 2 * (lit > 0) - 11;
 								if (score > bscore) blen = l, bp = p, blit = 0, bscore = score;
 							}
 						}

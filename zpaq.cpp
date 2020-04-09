@@ -743,7 +743,7 @@ class OutputArchive : public ArchiveBase, public libzpaq::Writer {
 	int64_t off;    // preceding multi-part bytes
 	unsigned ptr;   // write pointer in buf: 0 <= ptr <= BUFSIZE
 	enum { BUFSIZE = 1 << 16 };
-	char buf[BUFSIZE];  // I/O buffer
+	char buf[BUFSIZE]{};  // I/O buffer
 public:
 
 	// Open. If password then encrypt output.
@@ -1024,33 +1024,33 @@ public:
 private:
 
 	// Command line arguments
-	char command;             // command 'a', 'x', or 'l'
+	char command{};             // command 'a', 'x', or 'l'
 	string archive;           // archive name
 	vector<string> files;     // filename args
-	int all;                  // -all option
-	bool force;               // -force option
-	int fragment;             // -fragment option
-	const char* index;        // index option
-	char password_string[32]; // hash of -key argument
-	const char* password;     // points to password_string or NULL
+	int all{};                  // -all option
+	bool force{};               // -force option
+	int fragment{};             // -fragment option
+	const char* index{};        // index option
+	char password_string[32]{}; // hash of -key argument
+	const char* password{};     // points to password_string or NULL
 	string method;            // default "1"
-	bool noattributes;        // -noattributes option
+	bool noattributes{};        // -noattributes option
 	vector<string> notfiles;  // list of prefixes to exclude
 	string nottype;           // -not =...
 	vector<string> onlyfiles; // list of prefixes to include
-	const char* repack;       // -repack output file
-	char new_password_string[32]; // -repack hashed password
-	const char* new_password; // points to new_password_string or NULL
-	int summary;              // summary option if > 0, detailed if -1
-	bool dotest;              // -test option
-	int threads;              // default is number of cores
+	const char* repack{};       // -repack output file
+	char new_password_string[32]{}; // -repack hashed password
+	const char* new_password{}; // points to new_password_string or NULL
+	int summary{};              // summary option if > 0, detailed if -1
+	bool dotest{};              // -test option
+	int threads{};              // default is number of cores
 	vector<string> tofiles;   // -to option
-	int64_t date;             // now as decimal YYYYMMDDHHMMSS (UT)
-	int64_t version;          // version number or 14 digit date
+	int64_t date{};             // now as decimal YYYYMMDDHHMMSS (UT)
+	int64_t version{};          // version number or 14 digit date
 
 	// Archive state
-	int64_t dhsize;           // total size of D blocks according to H blocks
-	int64_t dcsize;           // total size of D blocks according to C blocks
+	int64_t dhsize{};           // total size of D blocks according to H blocks
+	int64_t dcsize{};           // total size of D blocks according to C blocks
 	vector<HT> ht;            // list of fragments
 	DTMap dt;                 // set of files in archive
 	DTMap edt;                // set of external files to add or compare
@@ -1067,7 +1067,7 @@ private:
 	string rename(string name);           // rename from -to
 	int64_t read_archive(const char* arc, int* errors = nullptr);  // read arc
 	bool isselected(const char* filename, bool rn = false);// files, -only, -not
-	void scandir(string filename);        // scan dirs to dt
+	void scandir(string filename);        // scan directories to dt
 	void addfile(string filename, int64_t edate, int64_t esize,
 		int64_t eattr);          // add external file to dt
 	void list_versions(int64_t csize);    // print ver. csize=archive size
@@ -1819,7 +1819,7 @@ inline void puti(libzpaq::StringBuffer& sb, uint64_t x, int n) {
 void print_progress(int64_t ts, int64_t td, int sum) {
 	if (td > ts) td = ts;
 	if (td >= 1000000) {
-		double eta = 0.001 * (mtime() - global_start) * (ts - td) / (td + 1.0);
+		auto eta = 0.001 * (mtime() - global_start) * (ts - td) / (td + 1.0);
 		printf("%5.2f%% %d:%02d:%02d ", td * 100.0 / (ts + 0.5),
 			int(eta / 3600), int(eta / 60) % 60, int(eta) % 60);
 		if (sum > 0) printf("\r"), fflush(stdout);
@@ -1849,7 +1849,7 @@ struct CJ {
 // Instructions to a compression job
 class CompressJob {
 public:
-	Mutex mutex;           // protects state changes
+	Mutex mutex{};           // protects state changes
 private:
 	int job;               // number of jobs
 	CJ* q;                 // buffer queue
@@ -2761,8 +2761,8 @@ bool Jidac::equal(DTMap::const_iterator p, const char* filename) {
 // the block are written in order.
 
 struct ExtractJob {         // list of jobs
-	Mutex mutex;              // protects state
-	Mutex write_mutex;        // protects writing to disk
+	Mutex mutex{};              // protects state
+	Mutex write_mutex{};        // protects writing to disk
 	int job;                  // number of jobs started
 	Jidac& jd;                // what to extract
 	FP outf;                  // currently open output file
@@ -3073,8 +3073,8 @@ int64_t copy(libzpaq::Reader& in, libzpaq::Writer& out, uint64_t n = ~0ull) {
 	int64_t result = 0;
 	char buf[BUFSIZE];
 	while (n > 0) {
-		int nc = n > BUFSIZE ? BUFSIZE : n;
-		int nr = in.read(buf, nc);
+		const int nc = n > BUFSIZE ? BUFSIZE : n;
+		const auto nr = in.read(buf, nc);
 		if (nr < 1) break;
 		out.write(buf, nr);
 		result += nr;
@@ -3704,7 +3704,7 @@ int main() {
 #endif
 
 	global_start = mtime();  // get start time
-	int errorcode = 0;
+	int errorcode;
 	try {
 		Jidac jidac;
 		errorcode = jidac.doCommand(argc, argv);
