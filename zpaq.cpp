@@ -1,6 +1,6 @@
 // zpaq.cpp - Journaling incremental deduplicating archiver
 
-#include "D:\Source\GitHub\ZPAQ\pch.h"
+#include "pch.h"
 #define ZPAQ_VERSION "7.15"
 /*
   This software is provided as-is, with no warranty.
@@ -59,18 +59,6 @@ Possible options:
 #define UNICODE  // For Windows
 #endif
 #include "libzpaq.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <time.h>
-#include <stdint.h>
-#include <string>
-#include <vector>
-#include <map>
-#include <algorithm>
-#include <stdexcept>
-#include <fcntl.h>
 
 #ifndef DEBUG
 #define NDEBUG 1

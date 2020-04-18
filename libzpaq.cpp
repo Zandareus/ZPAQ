@@ -22,12 +22,8 @@ conforming to the ZPAQ level 2 standard. See http://mattmahoney.net/zpaq/
 See libzpaq.h for additional documentation.
 */
 
-#include "D:\Source\GitHub\ZPAQ\pch.h"
-#include "D:\Source\GitHub\ZPAQ\libzpaq.h"
-#include <string.h>
-#include <string>
-#include <vector>
-#include <stdio.h>
+#include "pch.h"
+#include "libzpaq.h"
 
 #ifdef unix
 #ifndef NOJIT
