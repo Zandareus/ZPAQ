@@ -17,5 +17,6 @@
 #include <cctype>
 #include <ctime>
 #include <cstdint>
+#include <cassert>
 
 // other

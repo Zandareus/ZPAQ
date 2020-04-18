@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="AuxFiles">
+      <UniqueIdentifier>{bfd6ced5-61f2-4ca2-b627-889fa1400e37}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="D:\Source\GitHub\ZPAQ\libzpaq.cpp">
@@ -22,7 +25,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="D:\Source\GitHub\ZPAQ\pch.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>AuxFiles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -30,7 +33,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="D:\Source\GitHub\ZPAQ\pch.h">
-      <Filter>Header Files</Filter>
+      <Filter>AuxFiles</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

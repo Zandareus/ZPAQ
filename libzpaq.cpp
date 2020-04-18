@@ -143,8 +143,8 @@ namespace libzpaq {
 		const auto* p = (const unsigned char*)buf;
 		for (; n > 0 && (U32(len) & 511) != 0; --n) put(*p++);
 		for (; n >= 64; n -= 64) {
-			for (int i = 0; i < 16; ++i)
-				w[i] = p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3], p += 4;
+			for (unsigned int& i : w)
+				i = p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3], p += 4;
 			len += 512;
 			process();
 		}
@@ -584,7 +584,7 @@ namespace libzpaq {
 			memcpy(b, sha256.result(), 32);
 			for (int j = 0; j < pwLen; ++j) sha256.put(pw[j] ^ 0x5c);
 			for (int j = pwLen; j < 64; ++j) sha256.put(0x5c);
-			for (int j = 0; j < 32; ++j) sha256.put(b[j]);
+			for (char j : b) sha256.put(j);
 			memcpy(buf + i * 32 - 32, sha256.result(), 32);
 		}
 	}
@@ -1756,8 +1756,8 @@ namespace libzpaq {
 		for (int i = 0; i < 256; ++i) h[i] = p[i] = 0;
 
 		// Initialize components
-		for (int i = 0; i < 256; ++i)  // clear old model
-			comp[i].init();
+		for (auto& i : comp)  // clear old model
+			i.init();
 		int n = z.header[6]; // hsize[0..1] hh hm ph pm n (comp)[n] END 0[128] (hcomp) END
 		const U8* cp = &z.header[7];  // start of component list
 		for (int i = 0; i < n; ++i) {
@@ -2825,7 +2825,7 @@ namespace libzpaq {
 		const char* p;
 	public:
 		MemoryReader(const char* p_) : p(p_) {}
-		int get() { return *p++ & 255; }
+		int get() override { return *p++ & 255; }
 	};
 
 	void Compressor::startBlock(const char* hcomp) {
@@ -2977,8 +2977,8 @@ namespace libzpaq {
 		}
 		if (verify && dosha1) {
 			enc.out->put(253);
-			for (int i = 0; i < 20; ++i)
-				enc.out->put(sha1result[i]);
+			for (char i : sha1result)
+				enc.out->put(i);
 		}
 		else
 			enc.out->put(254);
@@ -5664,7 +5664,7 @@ In 64 bit mode, the following additional registers are used:
 
 	/*---------------------------------------------------------------------------*/
 
-	typedef struct _trbudget_t trbudget_t;
+	using trbudget_t = struct _trbudget_t;
 	struct _trbudget_t {
 		int chance;
 		int remain;
@@ -6557,7 +6557,7 @@ In 64 bit mode, the following additional registers are used:
 		LZBuffer(StringBuffer& inbuf, int args[], const unsigned* sap = nullptr);
 
 		// return 1 byte of compressed output (overrides Reader)
-		int get() {
+		int get() override {
 			int c = -1;
 			if (rpos == wpos) fill();
 			if (rpos < wpos) c = buf[rpos++];
@@ -6566,7 +6566,7 @@ In 64 bit mode, the following additional registers are used:
 		}
 
 		// Read up to p[0..n-1] and return bytes read.
-		int read(char* p, int n);
+		int read(char* p, int n) override;
 	};
 
 	// LZ/BWT preprocessor for levels 1..3 compression and e8e9 filter.

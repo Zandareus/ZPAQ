@@ -822,24 +822,21 @@ Use at your own risk.
 
 //////////////////////////////////////////////////////////////
 
+#pragma once
+#include "pch.h"
 #ifndef LIBZPAQ_H
 #define LIBZPAQ_H
 
 #ifndef DEBUG
 #define NDEBUG 1
 #endif
-#include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <algorithm>
 
 namespace libzpaq {
 	// 1, 2, 4, 8 byte unsigned integers
-	typedef uint8_t U8;
-	typedef uint16_t U16;
-	typedef uint32_t U32;
-	typedef uint64_t U64;
+	using U8 = uint8_t;
+	using U16 = uint16_t;
+	using U32 = uint32_t;
+	using U64 = uint64_t;
 
 	// Tables for parsing ZPAQL source code
 	extern const char* compname[256];    // list of ZPAQL component types
@@ -864,7 +861,7 @@ namespace libzpaq {
 	public:
 		virtual void put(int c) = 0;  // should output low 8 bits of c
 		virtual void write(const char* buf, int n);  // write buf[n]
-		virtual ~Writer() {}
+		virtual ~Writer() = default;
 	};
 
 	// Read 16 bit little-endian number
@@ -1195,7 +1192,7 @@ namespace libzpaq {
 		int skip();        // skip to the end of the segment, return next byte
 		void init();       // initialize at start of block
 		int stat(int x) { return pr.stat(x); }
-		int get() {        // return 1 byte of buffered input or EOF
+		int get() override {        // return 1 byte of buffered input or EOF
 			if (rpos == wpos) {
 				rpos = 0;
 				wpos = in ? in->read(&buf[0], BUFSIZE) : 0;
@@ -1431,7 +1428,7 @@ namespace libzpaq {
 		}
 
 		// Write a single byte.
-		void put(int c) {  // write 1 byte
+		void put(int c) override {  // write 1 byte
 			lengthen(1);
 			assert(p);
 			assert(wpos < al);
@@ -1440,7 +1437,7 @@ namespace libzpaq {
 		}
 
 		// Write buf[0..n-1]. If buf is NULL then advance write pointer only.
-		void write(const char* buf, int n) {
+		void write(const char* buf, int n) override {
 			if (n < 1) return;
 			lengthen(n);
 			assert(p);
@@ -1450,7 +1447,7 @@ namespace libzpaq {
 		}
 
 		// Read a single byte. Return EOF (-1) at end.
-		int get() {
+		int get() override {
 			assert(rpos <= wpos);
 			assert(rpos == wpos || p);
 			return rpos < wpos ? p[rpos++] : -1;
@@ -1459,7 +1456,7 @@ namespace libzpaq {
 		// Read up to n bytes into buf[0..] or fewer if EOF is first.
 		// Return the number of bytes actually read.
 		// If buf is NULL then advance read pointer without reading.
-		int read(char* buf, int n) {
+		int read(char* buf, int n) override {
 			assert(rpos <= wpos);
 			assert(wpos <= al);
 			assert(!al == !p);
