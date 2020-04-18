@@ -294,7 +294,7 @@ namespace libzpaq {
 		put(s0);
 
 		// copy s to hbuf
-		for (int i = 0; i < 8; ++i) {
+		for (auto i = 0; i < 8; ++i) {
 			hbuf[4 * i] = s[i] >> 24;
 			hbuf[4 * i + 1] = s[i] >> 16;
 			hbuf[4 * i + 2] = s[i] >> 8;
@@ -338,7 +338,7 @@ namespace libzpaq {
 
 	// Initialize encryption tables and round key. keylen is 16, 24, or 32.
 	AES_CTR::AES_CTR(const char* key, int keylen, const char* iv) {
-		assert(key != NULL);
+		assert(key != nullptr);
 		assert(keylen == 16 || keylen == 24 || keylen == 32);
 
 		// Initialize IV (default 0)
@@ -6523,7 +6523,7 @@ In 64 bit mode, the following additional registers are used:
 		const unsigned* sa;         // suffix array for BWT or LZ77-SA
 		unsigned* isa;              // inverse suffix array for LZ77-SA
 		enum { BUFSIZE = 1 << 14 };       // output buffer size
-		unsigned char buf[BUFSIZE]; // output buffer
+		unsigned char buf[BUFSIZE]{}; // output buffer
 
 		void write_literal(unsigned i, unsigned& lit);
 		void write_match(unsigned len, unsigned off);
@@ -6662,7 +6662,7 @@ In 64 bit mode, the following additional registers are used:
 				assert(ht.size() >= n);
 				assert(ht.size() > 0);
 				sa = &ht[0];
-				if (n > 0) divsufsort((const unsigned char*)in, (int*)sa, n);
+				if (n > 0) divsufsort(static_cast<const unsigned char*>(in), (int*)sa, n);
 			}
 			if (level < 3) {
 				assert(ht.size() >= (n * (sap == 0)) + (1u << 17 << args[0]));
@@ -6714,7 +6714,7 @@ In 64 bit mode, the following additional registers are used:
 								unsigned l, l1;  // length of match, leading literals
 								for (l = h; i + l < n && l < maxMatch && in[p + l] == in[i + l]; ++l);
 								for (l1 = h; l1 > 0 && in[p + l1 - 1] == in[i + l1 - 1]; --l1);
-								int score = int(l - l1) * 8 - lg(i - p) - 4 * (lit == 0 && l1 > 0) - 11;
+								auto score = int(l - l1) * 8 - lg(i - p) - 4 * (lit == 0 && l1 > 0) - 11;
 								for (unsigned a = 0; a < h; ++a) score = score * 5 / 8;
 								if (score > bscore) blen = l, bp = p, blit = l1, bscore = score;
 								if (l < blen || l < minMatch || l>255) break;
@@ -6759,8 +6759,8 @@ In 64 bit mode, the following additional registers are used:
 							if (p < i && i + blen <= n && in[p + blen - 1] == in[i + blen - 1]) {
 								unsigned l;
 								for (l = 0; i + l < n && l < maxMatch && in[p + l] == in[i + l]; ++l);
-								int score = l * 8 - lg(i - p) - 2 * (lit > 0) - 11;
-								if (score > bscore) blen = l, bp = p, blit = 0, bscore = score;
+								const int Score = l * 8 - lg(i - p) - 2 * (lit > 0) - 11;
+								if (Score > bscore) blen = l, bp = p, blit = 0, bscore = Score;
 							}
 						}
 						if (blen >= 128) break;
@@ -6840,11 +6840,11 @@ In 64 bit mode, the following additional registers are used:
 		else {
 			assert(level == 2);
 			while (lit > 0) {
-				unsigned lit1 = lit;
-				if (lit1 > 64) lit1 = 64;
-				put(lit1 - 1);
-				for (unsigned j = i - lit; j < i - lit + lit1; ++j) put(in[j]);
-				lit -= lit1;
+				auto Lit1 = lit;
+				if (Lit1 > 64) Lit1 = 64;
+				put(Lit1 - 1);
+				for (auto j = i - lit; j < i - lit + Lit1; ++j) put(in[j]);
+				lit -= Lit1;
 			}
 		}
 	}
@@ -6860,10 +6860,10 @@ In 64 bit mode, the following additional registers are used:
 			int ll = lg(len) - 1;
 			assert(ll >= 2);
 			off += (1 << rb) - 1;
-			int lo = lg(off) - 1 - rb;
-			assert(lo >= 0 && lo <= 23);
-			putb((lo + 8) >> 3, 2);// mm
-			putb(lo & 7, 3);     // mmm
+			const int Lo = lg(off) - 1 - rb;
+			assert(Lo >= 0 && Lo <= 23);
+			putb((Lo + 8) >> 3, 2);// mm
+			putb(Lo & 7, 3);     // mmm
 			while (--ll >= 2) {  // n
 				putb(1, 1);
 				putb((len >> ll) & 1, 1);
@@ -6871,7 +6871,7 @@ In 64 bit mode, the following additional registers are used:
 			putb(0, 1);
 			putb(len & 3, 2);    // ll
 			putb(off, rb);     // r
-			putb(off >> rb, lo); // q
+			putb(off >> rb, Lo); // q
 		}
 
 		// x[2]:len[6] off[x-1]
@@ -7678,33 +7678,33 @@ In 64 bit mode, the following additional registers are used:
 				// Analyze the data
 				const int NR = 1 << 12;
 				int pt[256] = { 0 };  // position of last occurrence
-				int r[NR] = { 0 };    // count repetition gaps of length r
+				int R[NR] = { 0 };    // count repetition gaps of length r
 				const unsigned char* p = in->data();
 				if (level > 0) {
 					for (unsigned i = 0; i < n; ++i) {
-						const int k = i - pt[p[i]];
-						if (k > 0 && k < NR) ++r[k];
+						const int K = i - pt[p[i]];
+						if (K > 0 && K < NR) ++R[K];
 						pt[p[i]] = i;
 					}
 				}
 
 				// Add periodic models
-				int n1 = n - r[1] - r[2] - r[3];
-				for (int i = 0; i < 2; ++i) {
-					int period = 0;
-					double score = 0;
-					int t = 0;
-					for (int j = 5; j < NR && t < n1; ++j) {
-						const double s = r[j] / (256.0 + n1 - t);
-						if (s > score) score = s, period = j;
-						t += r[j];
+				int N1 = n - R[1] - R[2] - R[3];
+				for (auto i = 0; i < 2; ++i) {
+					auto period = 0;
+					double Score = 0;
+					auto T = 0;
+					for (auto j = 5; j < NR && T < N1; ++j) {
+						const auto S = R[j] / (256.0 + N1 - T);
+						if (S > Score) Score = S, period = j;
+						T += R[j];
 					}
-					if (period > 4 && score > 0.1) {
+					if (period > 4 && Score > 0.1) {
 						method += "c0,0," + itos(999 + period) + ",255i1";
 						if (period <= 255)
 							method += "c0," + itos(period) + "i1";
-						n1 -= r[period];
-						r[period] = 0;
+						N1 -= R[period];
+						R[period] = 0;
 					}
 					else
 						break;

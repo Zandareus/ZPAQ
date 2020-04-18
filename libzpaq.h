@@ -878,8 +878,8 @@ namespace libzpaq {
 		T* data;     // user location of [0] on a 64 byte boundary
 		size_t n;    // user size
 		int offset;  // distance back in bytes to start of actual allocation
-		void operator=(const Array&);  // no assignment
-		Array(const Array&);  // no copy
+		void operator=(const Array&) = delete;  // no assignment
+		Array(const Array&) = delete;  // no copy
 	public:
 		Array(size_t sz = 0, int ex = 0) : data(nullptr), n(0), offset(0) {
 			resize(sz, ex);
@@ -961,10 +961,10 @@ namespace libzpaq {
 		SHA256() { init(); }
 	private:
 		void init();           // reset, but don't clear hbuf
-		unsigned len0, len1;   // length in bits (low, high)
-		unsigned s[8];         // hash state
-		unsigned w[16];        // input buffer
-		char hbuf[32];         // result
+		unsigned len0{}, len1{};   // length in bits (low, high)
+		unsigned s[8]{};         // hash state
+		unsigned w[16]{};        // input buffer
+		char hbuf[32]{};         // result
 		void process();        // hash 1 block
 	};
 
@@ -1023,7 +1023,7 @@ namespace libzpaq {
 		void run(U32 input);    // Execute with input
 		int read(Reader* in2);  // Read header
 		bool write(Writer* out2, bool pp); // If pp write PCOMP else HCOMP header
-		int step(U32 input, int mode);  // Trace execution (defined externally)
+		// int Step(U32 input, int mode);  // Trace execution (defined externally)
 
 		Writer* output;         // Destination for OUT instruction, or 0 to suppress
 		SHA1* sha1;             // Points to checksum computer
@@ -1072,9 +1072,9 @@ namespace libzpaq {
 	// or SSE (without or with).
 
 	struct Component {
-		size_t limit;   // max count for cm
-		size_t cxt;     // saved context
-		size_t a, b, c; // multi-purpose variables
+		size_t limit{};   // max count for cm
+		size_t cxt{};     // saved context
+		size_t a{}, b{}, c{}; // multi-purpose variables
 		Array<U32> cm;  // cm[cxt] -> p in bits 31..10, n in 9..0; MATCH index
 		Array<U8> ht;   // ICM/ISSE hash table[0..size1][0..15] and MATCH buf
 		Array<U16> a16; // MIX weights
@@ -1142,7 +1142,7 @@ namespace libzpaq {
 			assert(y == 0 || y == 1);
 			U32& pn = cr.cm(cr.cxt);
 			U32 count = pn & 0x3ff;
-			int error = y * 32767 - (cr.cm(cr.cxt) >> 17);
+			const int error = y * 32767 - (cr.cm(cr.cxt) >> 17);
 			pn += (error * dt[count] & -1024) + (count < cr.limit);
 		}
 
@@ -1357,7 +1357,7 @@ namespace libzpaq {
 		Encoder enc;  // arithmetic encoder containing predictor
 		Reader* in;   // input source
 		SHA1 sha1;    // to test pz output
-		char sha1result[20];  // sha1 output
+		char sha1result[20]{};  // sha1 output
 		enum { INIT, BLOCK1, SEG1, BLOCK2, SEG2 } state;
 		bool verify;  // if true then test by postprocessing
 	};
@@ -1476,7 +1476,8 @@ namespace libzpaq {
 		}
 
 		// Swap efficiently (init is not swapped)
-		void swap(StringBuffer& s) {
+		void swap(StringBuffer& s) noexcept
+		{
 			std::swap(p, s.p);
 			std::swap(al, s.al);
 			std::swap(wpos, s.wpos);

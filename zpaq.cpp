@@ -1,7 +1,7 @@
 // zpaq.cpp - Journaling incremental deduplicating archiver
 
 #include "pch.h"
-#define ZPAQ_VERSION "7.15"
+#define ZPAQ_VERSION "7.15.01"
 /*
   This software is provided as-is, with no warranty.
   I, Matt Mahoney, release this software into
@@ -327,41 +327,41 @@ string attrToString(int64_t attrib) {
 // Valid from 1970 to 2099.
 int64_t decimal_time(time_t tt) {
 	if (tt == -1) tt = 0;
-	int64_t t = (sizeof(tt) == 4) ? unsigned(tt) : tt;
-	const int second = t % 60;
-	const int minute = t / 60 % 60;
-	const int hour = t / 3600 % 24;
-	t /= 86400;  // days since Jan 1 1970
-	const int term = t / 1461;  // 4 year terms since 1970
-	t %= 1461;
-	t += (t >= 59);  // insert Feb 29 on non leap years
-	t += (t >= 425);
-	t += (t >= 1157);
-	const int year = term * 4 + t / 366 + 1970;  // actual year
-	t %= 366;
-	t += (t >= 60) * 2;  // make Feb. 31 days
-	t += (t >= 123);   // insert Apr 31
-	t += (t >= 185);   // insert June 31
-	t += (t >= 278);   // insert Sept 31
-	t += (t >= 340);   // insert Nov 31
-	const int month = t / 31 + 1;
-	const int day = t % 31 + 1;
-	return year * 10000000000LL + month * 100000000 + day * 1000000
-		+ hour * 10000 + minute * 100 + second;
+	auto T = (sizeof(tt) == 4) ? unsigned(tt) : tt;
+	const int Second = T % 60;
+	const int Minute = T / 60 % 60;
+	const int Hour = T / 3600 % 24;
+	T /= 86400;  // days since Jan 1 1970
+	const int Term = T / 1461;  // 4 year terms since 1970
+	T %= 1461;
+	T += (T >= 59);  // insert Feb 29 on non leap years
+	T += (T >= 425);
+	T += (T >= 1157);
+	const int Year = Term * 4 + T / 366 + 1970;  // actual year
+	T %= 366;
+	T += (T >= 60) * 2;  // make Feb. 31 days
+	T += (T >= 123);   // insert Apr 31
+	T += (T >= 185);   // insert June 31
+	T += (T >= 278);   // insert Sept 31
+	T += (T >= 340);   // insert Nov 31
+	const int Month = T / 31 + 1;
+	const int Day = T % 31 + 1;
+	return Year * 10000000000LL + Month * 100000000 + Day * 1000000
+		+ Hour * 10000 + Minute * 100 + Second;
 }
 
 // Convert decimal date to time_t - inverse of decimal_time()
-time_t unix_time(int64_t date) {
-	if (date <= 0) return -1;
-	static const int days[12] = { 0,31,59,90,120,151,181,212,243,273,304,334 };
-	const int year = date / 10000000000LL % 10000;
-	const int month = (date / 100000000 % 100 - 1) % 12;
-	const int day = date / 1000000 % 100;
-	const int hour = date / 10000 % 100;
-	const int min = date / 100 % 100;
-	const int sec = date % 100;
-	return (day - 1 + days[month] + (year % 4 == 0 && month > 1) + ((year - 1970) * 1461 + 1) / 4)
-		* 86400 + hour * 3600 + min * 60 + sec;
+time_t unix_time(const int64_t Date) {
+	if (Date <= 0) return -1;
+	static const int DAYS[12] = { 0,31,59,90,120,151,181,212,243,273,304,334 };
+	const int Year = Date / 10000000000LL % 10000;
+	const int Month = (Date / 100000000 % 100 - 1) % 12;
+	const int Day = Date / 1000000 % 100;
+	const int Hour = Date / 10000 % 100;
+	const int Min = Date / 100 % 100;
+	const int Sec = Date % 100;
+	return (Day - 1 + DAYS[Month] + (Year % 4 == 0 && Month > 1) + ((Year - 1970) * 1461 + 1) / 4)
+		* 86400 + Hour * 3600 + Min * 60 + Sec;
 }
 
 /////////////////////////////// File //////////////////////////////////
@@ -594,14 +594,14 @@ string itos(int64_t x, int n = 1) {
 }
 
 // Replace * and ? in fn with part or digits of part
-string subpart(string fn, int part) {
-	for (int j = fn.size() - 1; j >= 0; --j) {
-		if (fn[j] == '?')
-			fn[j] = '0' + part % 10, part /= 10;
-		else if (fn[j] == '*')
-			fn = fn.substr(0, j) + itos(part) + fn.substr(j + 1), part = 0;
+string subpart(string Fn, int Part) {
+	for (int J = Fn.size() - 1; J >= 0; --J) {
+		if (Fn[J] == '?')
+			Fn[J] = '0' + Part % 10, Part /= 10;
+		else if (Fn[J] == '*')
+			Fn = Fn.substr(0, J) + itos(Part) + Fn.substr(J + 1), Part = 0;
 	}
-	return fn;
+	return Fn;
 }
 
 // Base of InputArchive and OutputArchive
@@ -677,17 +677,17 @@ void InputArchive::seek(int64_t p, int whence) {
 
 	// Seek across multiple files
 	assert(sz.size() > 1);
-	int64_t sum = 0;
-	unsigned i;
-	for (i = 0;; ++i) {
-		sum += sz[i];
-		if (sum > off || i + 1 >= sz.size()) break;
+	int64_t Sum = 0;
+	unsigned I;
+	for (I = 0;; ++I) {
+		Sum += sz[I];
+		if (Sum > off || I + 1 >= sz.size()) break;
 	}
-	const string next = subpart(fn, i + 1);
+	const auto Next = subpart(fn, I + 1);
 	fclose(fp);
-	fp = fopen(next.c_str(), RB);
-	if (fp == FPNULL) ioerr(next.c_str());
-	fseeko(fp, off - sum, SEEK_END);
+	fp = fopen(Next.c_str(), RB);
+	if (fp == FPNULL) ioerr(Next.c_str());
+	fseeko(fp, off - Sum, SEEK_END);
 }
 
 // Open for input. Decrypt with password and using the salt in the
@@ -699,11 +699,11 @@ InputArchive::InputArchive(const char* filename, const char* password) :
 	assert(filename);
 
 	// Get file sizes
-	const string part0 = subpart(filename, 0);
-	for (unsigned i = 1; ; ++i) {
-		const string parti = subpart(filename, i);
-		if (i > 1 && parti == part0) break;
-		fp = fopen(parti.c_str(), RB);
+	const auto Part0 = subpart(filename, 0);
+	for (unsigned I = 1; ; ++I) {
+		const auto PartI = subpart(filename, I);
+		if (I > 1 && PartI == Part0) break;
+		fp = fopen(PartI.c_str(), RB);
 		if (fp == FPNULL) break;
 		fseeko(fp, 0, SEEK_END);
 		sz.push_back(ftello(fp));
@@ -739,7 +739,7 @@ public:
 		const char* salt_ = nullptr, int64_t off_ = 0);
 
 	// Write pending output
-	void flush() {
+	void Flush() {
 		assert(fp != FPNULL);
 		if (aes) aes->encrypt(buf, ptr, ftello(fp) + off);
 		fwrite(buf, 1, ptr, fp);
@@ -749,7 +749,7 @@ public:
 	// Position the next read or write offset to p.
 	void seek(int64_t p, int whence) {
 		if (fp != FPNULL) {
-			flush();
+			Flush();
 			fseeko(fp, p, whence);
 		}
 		else if (whence == SEEK_SET) off = p;
@@ -766,7 +766,7 @@ public:
 	void put(int c) override {
 		if (fp == FPNULL) ++off;
 		else {
-			if (ptr >= BUFSIZE) flush();
+			if (ptr >= BUFSIZE) Flush();
 			buf[ptr++] = c;
 		}
 	}
@@ -780,7 +780,7 @@ public:
 	// Flush output and close
 	void close() {
 		if (fp != FPNULL) {
-			flush();
+			Flush();
 			fclose(fp);
 		}
 		fp = FPNULL;
@@ -1012,33 +1012,33 @@ public:
 private:
 
 	// Command line arguments
-	char command;             // command 'a', 'x', or 'l'
+	char command{};             // command 'a', 'x', or 'l'
 	string archive;           // archive name
 	vector<string> files;     // filename args
-	int all;                  // -all option
-	bool force;               // -force option
-	int fragment;             // -fragment option
-	const char* index;        // index option
-	char password_string[32]; // hash of -key argument
-	const char* password;     // points to password_string or NULL
+	int all{};                  // -all option
+	bool force{};               // -force option
+	int fragment{};             // -fragment option
+	const char* index{};        // index option
+	char password_string[32]{}; // hash of -key argument
+	const char* password{};     // points to password_string or NULL
 	string method;            // default "1"
-	bool noattributes;        // -noattributes option
+	bool noattributes{};        // -noattributes option
 	vector<string> notfiles;  // list of prefixes to exclude
 	string nottype;           // -not =...
 	vector<string> onlyfiles; // list of prefixes to include
-	const char* repack;       // -repack output file
-	char new_password_string[32]; // -repack hashed password
-	const char* new_password; // points to new_password_string or NULL
-	int summary;              // summary option if > 0, detailed if -1
-	bool dotest;              // -test option
-	int threads;              // default is number of cores
+	const char* repack{};       // -repack output file
+	char new_password_string[32]{}; // -repack hashed password
+	const char* new_password{}; // points to new_password_string or NULL
+	int summary{};              // summary option if > 0, detailed if -1
+	bool dotest{};              // -test option
+	int threads{};              // default is number of cores
 	vector<string> tofiles;   // -to option
-	int64_t date;             // now as decimal YYYYMMDDHHMMSS (UT)
-	int64_t version;          // version number or 14 digit date
+	int64_t date{};             // now as decimal YYYYMMDDHHMMSS (UT)
+	int64_t version{};          // version number or 14 digit date
 
 	// Archive state
-	int64_t dhsize;           // total size of D blocks according to H blocks
-	int64_t dcsize;           // total size of D blocks according to C blocks
+	int64_t dhsize{};           // total size of D blocks according to H blocks
+	int64_t dcsize{};           // total size of D blocks according to C blocks
 	vector<HT> ht;            // list of fragments
 	DTMap dt;                 // set of files in archive
 	DTMap edt;                // set of external files to add or compare
@@ -1181,9 +1181,9 @@ int Jidac::doCommand(int argc, const char** argv) {
 
 	// Get date
 	time_t now = time(nullptr);
-	tm* t = gmtime(&now);
-	date = (t->tm_year + 1900) * 10000000000LL + (t->tm_mon + 1) * 100000000LL
-		+ t->tm_mday * 1000000 + t->tm_hour * 10000 + t->tm_min * 100 + t->tm_sec;
+	const auto T = gmtime(&now);
+	date = (T->tm_year + 1900) * 10000000000LL + (T->tm_mon + 1) * 100000000LL
+		+ T->tm_mday * 1000000 + T->tm_hour * 10000 + T->tm_min * 100 + T->tm_sec;
 
 	// Get optional options
 	for (int i = 1; i < argc; ++i) {
@@ -1510,20 +1510,20 @@ int64_t Jidac::read_archive(const char* arc, int* errors) {
 									"Unordered fragment tables: expected >= %d found %1.0f\n",
 									int(ht.size()), double(num));
 							}
-							for (unsigned i = 0; i < n; ++i) {
-								if (i == 0) {
+							for (unsigned I = 0; I < n; ++I) {
+								if (I == 0) {
 									block.emplace_back(num, data_offset);
 									block.back().usize = 8;
 									block.back().bsize = bsize;
 									block.back().frags = os.size() / 24;
 								}
-								while (int64_t(ht.size()) <= num + i) ht.emplace_back();
-								memcpy(ht[num + i].sha1, s, 20);
+								while (int64_t(ht.size()) <= num + I) ht.emplace_back();
+								memcpy(ht[num + I].sha1, s, 20);
 								s += 20;
 								assert(block.size() > 0);
-								unsigned f = btoi(s);
-								if (f > 0x7fffffff) error("fragment too big");
-								block.back().usize += (ht[num + i].usize = f) + 4u;
+								auto F = btoi(s);
+								if (F > 0x7fffffff) error("fragment too big");
+								block.back().usize += (ht[num + I].usize = F) + 4u;
 							}
 							data_offset += bsize;
 						}
@@ -1554,16 +1554,16 @@ int64_t Jidac::read_archive(const char* arc, int* errors) {
 									if (s + 4 > end) error("missing attr");
 									unsigned na = btoi(s);  // attr bytes
 									if (s + na > end || na > 65535) error("attr too long");
-									for (unsigned i = 0; i < na; ++i, ++s)  // read attr
-										if (i < 8) dtr.attr += int64_t(*s & 255) << (i * 8);
+									for (unsigned I = 0; I < na; ++I, ++s)  // read attr
+										if (I < 8) dtr.attr += int64_t(*s & 255) << (I * 8);
 									if (noattributes) dtr.attr = 0;
 									if (s + 4 > end) error("missing ptr");
-									unsigned ni = btoi(s);  // ptr list size
-									if (ni > (end - s) / 4u) error("ptr list too long");
-									if (issel) dtr.ptr.resize(ni);
-									for (unsigned i = 0; i < ni; ++i) {  // read ptr
-										const unsigned j = btoi(s);
-										if (issel) dtr.ptr[i] = j;
+									auto Ni = btoi(s);  // ptr list size
+									if (Ni > (end - s) / 4u) error("ptr list too long");
+									if (issel) dtr.ptr.resize(Ni);
+									for (unsigned I = 0; I < Ni; ++I) {  // read ptr
+										const auto J = btoi(s);
+										if (issel) dtr.ptr[I] = J;
 									}
 								}
 								if (issel) dt[fn] = dtr;
@@ -1807,9 +1807,9 @@ inline void puti(libzpaq::StringBuffer& sb, uint64_t x, int n) {
 void print_progress(int64_t ts, int64_t td, int sum) {
 	if (td > ts) td = ts;
 	if (td >= 1000000) {
-		double eta = 0.001 * (mtime() - global_start) * (ts - td) / (td + 1.0);
+		const auto Eta = 0.001 * (mtime() - global_start) * (ts - td) / (td + 1.0);
 		printf("%5.2f%% %d:%02d:%02d ", td * 100.0 / (ts + 0.5),
-			int(eta / 3600), int(eta / 60) % 60, int(eta) % 60);
+			int(Eta / 3600), int(Eta / 60) % 60, int(Eta) % 60);
 		if (sum > 0) printf("\r"), fflush(stdout);
 	}
 }
@@ -1837,7 +1837,7 @@ struct CJ {
 // Instructions to a compression job
 class CompressJob {
 public:
-	Mutex mutex;           // protects state changes
+	Mutex mutex{};           // protects state changes
 private:
 	int job;               // number of jobs
 	CJ* q;                 // buffer queue
@@ -1849,22 +1849,22 @@ private:
 public:
 	friend ThreadReturn compressThread(void* arg);
 	friend ThreadReturn writeThread(void* arg);
-	CompressJob(int threads, int buffers, libzpaq::Writer* f) :
-		job(0), q(nullptr), qsize(buffers), front(0), out(f) {
-		q = new CJ[buffers];
+	CompressJob(int threads, const int Buffers, libzpaq::Writer* f) :
+		job(0), q(nullptr), qsize(Buffers), front(0), out(f) {
+		q = new CJ[Buffers];
 		if (!q) throw std::bad_alloc();
 		init_mutex(mutex);
-		empty.init(buffers);
+		empty.init(Buffers);
 		compressors.init(threads);
-		for (int i = 0; i < buffers; ++i) {
+		for (auto i = 0; i < Buffers; ++i) {
 			q[i].full.init(0);
 			q[i].compressed.init(0);
 		}
 	}
 	~CompressJob() {
-		for (int i = qsize - 1; i >= 0; --i) {
-			q[i].compressed.destroy();
-			q[i].full.destroy();
+		for (int I = qsize - 1; I >= 0; --I) {
+			q[I].compressed.destroy();
+			q[I].full.destroy();
 		}
 		compressors.destroy();
 		empty.destroy();
@@ -2758,7 +2758,7 @@ struct ExtractJob {         // list of jobs
 	double maxMemory;         // largest memory used by any block (test mode)
 	int64_t total_size;       // bytes to extract
 	int64_t total_done;       // bytes extracted so far
-	ExtractJob(Jidac& j) : job(0), jd(j), outf(FPNULL), lastdt(j.dt.end()),
+	explicit ExtractJob(Jidac& j) : job(0), jd(j), outf(FPNULL), lastdt(j.dt.end()),
 		maxMemory(0), total_size(0), total_done(0) {
 		init_mutex(mutex);
 		init_mutex(write_mutex);
@@ -2789,17 +2789,17 @@ ThreadReturn decompressThread(void* arg) {
 	while (true) {
 		lock(job.mutex);
 		for (unsigned i = 0; i <= job.jd.block.size(); ++i) {
-			unsigned k = i + next;
-			if (k >= job.jd.block.size()) k -= job.jd.block.size();
+			auto K = i + next;
+			if (K >= job.jd.block.size()) K -= job.jd.block.size();
 			if (i == job.jd.block.size()) {  // no more jobs?
 				release(job.mutex);
 				return 0;
 			}
-			Block& b = job.jd.block[k];
+			Block& b = job.jd.block[K];
 			if (b.state == Block::READY && b.size > 0 && b.usize >= 0) {
 				b.state = Block::WORKING;
 				release(job.mutex);
-				next = k;
+				next = K;
 				break;
 			}
 		}
@@ -3047,12 +3047,12 @@ ThreadReturn decompressThread(void* arg) {
 // Streaming output destination
 struct OutputFile : public libzpaq::Writer {
 	FP f;
-	void put(int c) override {
-		char ch = c;
-		if (f != FPNULL) fwrite(&ch, 1, 1, f);
+	void put(const int c) override {
+		char Ch = c;
+		if (f != FPNULL) fwrite(&Ch, 1, 1, f);
 	}
 	void write(const char* buf, int n) override { if (f != FPNULL) fwrite(buf, 1, n, f); }
-	OutputFile(FP out = FPNULL) : f(out) {}
+	explicit OutputFile(const FP Out = FPNULL) : f(Out) {}
 };
 
 // Copy at most n bytes from in to out (default all). Return how many copied.
@@ -3138,25 +3138,25 @@ int Jidac::extract() {
 
 			// Read C block. Assume uncompressed and hash is present
 			static char hdr[256] = { 0 };  // Read C block
-			int hsize = ver[i].data_offset - ver[i].offset;
-			if (hsize < 70 || hsize>255) error("bad C block size");
-			if (in.read(hdr, hsize) != hsize) error("EOF in header");
-			if (hdr[hsize - 36] != 9  // size of uncompressed block low byte
-				|| (hdr[hsize - 22] & 255) != 253  // start of SHA1 marker
-				|| (hdr[hsize - 1] & 255) != 255) {  // end of block marker
-				for (int j = 0; j < hsize; ++j)
+			int Hsize = ver[i].data_offset - ver[i].offset;
+			if (Hsize < 70 || Hsize>255) error("bad C block size");
+			if (in.read(hdr, Hsize) != Hsize) error("EOF in header");
+			if (hdr[Hsize - 36] != 9  // size of uncompressed block low byte
+				|| (hdr[Hsize - 22] & 255) != 253  // start of SHA1 marker
+				|| (hdr[Hsize - 1] & 255) != 255) {  // end of block marker
+				for (int j = 0; j < Hsize; ++j)
 					printf("%d%c", hdr[j] & 255, j % 10 == 9 ? '\n' : ' ');
 				printf("at %1.0f\n", ver[i].offset + .0);
 				error("C block in weird format");
 			}
-			memcpy(hdr + hsize - 34,
+			memcpy(hdr + Hsize - 34,
 				"\x00\x00\x00\x00\x00\x00\x00\x00"  // csize = 0
 				"\x00\x00\x00\x00"  // compressed data terminator
 				"\xfd"  // start of hash marker
 				"\x05\xfe\x40\x57\x53\x16\x6f\x12\x55\x59\xe7\xc9\xac\x55\x86"
 				"\x54\xf1\x07\xc7\xe9"  // SHA-1('0'*8)
 				"\xff", 34);  // EOB
-			out.write(hdr, hsize);
+			out.write(hdr, Hsize);
 			in.seek(ver[i].csize, SEEK_CUR);  // skip D blocks
 			int64_t end = sz;
 			if (i + 1 < ver.size()) end = ver[i + 1].offset;
@@ -3692,19 +3692,19 @@ int main() {
 #endif
 
 	global_start = mtime();  // get start time
-	int errorcode = 0;
+	auto ErrorCode = 0;
 	try {
 		Jidac jidac;
-		errorcode = jidac.doCommand(argc, argv);
+		ErrorCode = jidac.doCommand(argc, argv);
 	}
 	catch (std::exception& e) {
 		fflush(stdout);
 		fprintf(stderr, "zpaq error: %s\n", e.what());
-		errorcode = 2;
+		ErrorCode = 2;
 	}
 	fflush(stdout);
 	fprintf(stderr, "%1.3f seconds %s\n", (mtime() - global_start) / 1000.0,
-		errorcode > 1 ? "(with errors)" :
-		errorcode > 0 ? "(with warnings)" : "(all OK)");
-	return errorcode;
+		ErrorCode > 1 ? "(with errors)" :
+		ErrorCode > 0 ? "(with warnings)" : "(all OK)");
+	return ErrorCode;
 }
