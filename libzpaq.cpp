@@ -156,14 +156,14 @@ namespace libzpaq {
 		U32 a = h[0], b = h[1], c = h[2], d = h[3], e = h[4];
 		static const U32 k[4] = { 0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6 };
 #define f(a,b,c,d,e,i) \
-    if (i>=16) \
-      w[(i)&15]^=w[(i-3)&15]^w[(i-8)&15]^w[(i-14)&15], \
-      w[(i)&15]=w[(i)&15]<<1|w[(i)&15]>>31; \
-    e+=(a<<5|a>>27)+k[(i)/20]+w[(i)&15] \
-      +((i)%40>=20 ? b^c^d : i>=40 ? (b&c)|(d&(b|c)) : d^(b&(c^d))); \
-    b=b<<30|b>>2;
+	if (i>=16) \
+	  w[(i)&15]^=w[(i-3)&15]^w[(i-8)&15]^w[(i-14)&15], \
+	  w[(i)&15]=w[(i)&15]<<1|w[(i)&15]>>31; \
+	e+=(a<<5|a>>27)+k[(i)/20]+w[(i)&15] \
+	  +((i)%40>=20 ? b^c^d : i>=40 ? (b&c)|(d&(b|c)) : d^(b&(c^d))); \
+	b=b<<30|b>>2;
 #define r(i) f(a,b,c,d,e,i) f(e,a,b,c,d,i+1) f(d,e,a,b,c,i+2) \
-               f(c,d,e,a,b,i+3) f(b,c,d,e,a,i+4)
+			   f(c,d,e,a,b,i+3) f(b,c,d,e,a,i+4)
 		r(0)  r(5)  r(10) r(15) r(20) r(25) r(30) r(35)
 			r(40) r(45) r(50) r(55) r(60) r(65) r(70) r(75)
 #undef f
@@ -190,40 +190,40 @@ namespace libzpaq {
 #define ror(a,b) ((a)>>(b)|(a<<(32-(b))))
 
 #define m(i) \
-     w[(i)&15]+=w[(i-7)&15] \
-       +(ror(w[(i-15)&15],7)^ror(w[(i-15)&15],18)^(w[(i-15)&15]>>3)) \
-       +(ror(w[(i-2)&15],17)^ror(w[(i-2)&15],19)^(w[(i-2)&15]>>10))
+	 w[(i)&15]+=w[(i-7)&15] \
+	   +(ror(w[(i-15)&15],7)^ror(w[(i-15)&15],18)^(w[(i-15)&15]>>3)) \
+	   +(ror(w[(i-2)&15],17)^ror(w[(i-2)&15],19)^(w[(i-2)&15]>>10))
 
 #define r(a,b,c,d,e,f,g,h,i) { \
-    unsigned t1=ror(e,14)^e; \
-    t1=ror(t1,5)^e; \
-    h+=ror(t1,6)+((e&f)^(~e&g))+k[i]+w[(i)&15]; } \
-    d+=h; \
-    {unsigned t1=ror(a,9)^a; \
-    t1=ror(t1,11)^a; \
-    h+=ror(t1,2)+((a&b)^(c&(a^b))); }
+	unsigned t1=ror(e,14)^e; \
+	t1=ror(t1,5)^e; \
+	h+=ror(t1,6)+((e&f)^(~e&g))+k[i]+w[(i)&15]; } \
+	d+=h; \
+	{unsigned t1=ror(a,9)^a; \
+	t1=ror(t1,11)^a; \
+	h+=ror(t1,2)+((a&b)^(c&(a^b))); }
 
 #define mr(a,b,c,d,e,f,g,h,i) m(i); r(a,b,c,d,e,f,g,h,i);
 
 #define r8(i) \
-    r(a,b,c,d,e,f,g,h,i);   \
-    r(h,a,b,c,d,e,f,g,i+1); \
-    r(g,h,a,b,c,d,e,f,i+2); \
-    r(f,g,h,a,b,c,d,e,i+3); \
-    r(e,f,g,h,a,b,c,d,i+4); \
-    r(d,e,f,g,h,a,b,c,i+5); \
-    r(c,d,e,f,g,h,a,b,i+6); \
-    r(b,c,d,e,f,g,h,a,i+7);
+	r(a,b,c,d,e,f,g,h,i);   \
+	r(h,a,b,c,d,e,f,g,i+1); \
+	r(g,h,a,b,c,d,e,f,i+2); \
+	r(f,g,h,a,b,c,d,e,i+3); \
+	r(e,f,g,h,a,b,c,d,i+4); \
+	r(d,e,f,g,h,a,b,c,i+5); \
+	r(c,d,e,f,g,h,a,b,i+6); \
+	r(b,c,d,e,f,g,h,a,i+7);
 
 #define mr8(i) \
-    mr(a,b,c,d,e,f,g,h,i);   \
-    mr(h,a,b,c,d,e,f,g,i+1); \
-    mr(g,h,a,b,c,d,e,f,i+2); \
-    mr(f,g,h,a,b,c,d,e,i+3); \
-    mr(e,f,g,h,a,b,c,d,i+4); \
-    mr(d,e,f,g,h,a,b,c,i+5); \
-    mr(c,d,e,f,g,h,a,b,i+6); \
-    mr(b,c,d,e,f,g,h,a,i+7);
+	mr(a,b,c,d,e,f,g,h,i);   \
+	mr(h,a,b,c,d,e,f,g,i+1); \
+	mr(g,h,a,b,c,d,e,f,i+2); \
+	mr(f,g,h,a,b,c,d,e,i+3); \
+	mr(e,f,g,h,a,b,c,d,i+4); \
+	mr(d,e,f,g,h,a,b,c,i+5); \
+	mr(c,d,e,f,g,h,a,b,i+6); \
+	mr(b,c,d,e,f,g,h,a,i+7);
 
 		static const unsigned k[64] = {
 		  0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
@@ -949,8 +949,8 @@ namespace libzpaq {
 	// Initialize machine state as HCOMP
 	void ZPAQL::inith() {
 		assert(header.isize() > 6);
-		assert(output == 0);
-		assert(sha1 == 0);
+		assert(output == nullptr);
+		assert(sha1 == nullptr);
 		init(header[2], header[3]); // hh, hm
 	}
 
@@ -4721,29 +4721,29 @@ In 64 bit mode, the following additional registers are used:
 #endif /* MAX */
 #define STACK_PUSH(_a, _b, _c, _d)\
   do {\
-    assert(ssize < STACK_SIZE);\
-    stack[ssize].a = (_a), stack[ssize].b = (_b),\
-    stack[ssize].c = (_c), stack[ssize++].d = (_d);\
+	assert(ssize < STACK_SIZE);\
+	stack[ssize].a = (_a), stack[ssize].b = (_b),\
+	stack[ssize].c = (_c), stack[ssize++].d = (_d);\
   } while(0)
 #define STACK_PUSH5(_a, _b, _c, _d, _e)\
   do {\
-    assert(ssize < STACK_SIZE);\
-    stack[ssize].a = (_a), stack[ssize].b = (_b),\
-    stack[ssize].c = (_c), stack[ssize].d = (_d), stack[ssize++].e = (_e);\
+	assert(ssize < STACK_SIZE);\
+	stack[ssize].a = (_a), stack[ssize].b = (_b),\
+	stack[ssize].c = (_c), stack[ssize].d = (_d), stack[ssize++].e = (_e);\
   } while(0)
 #define STACK_POP(_a, _b, _c, _d)\
   do {\
-    assert(0 <= ssize);\
-    if(ssize == 0) { return; }\
-    (_a) = stack[--ssize].a, (_b) = stack[ssize].b,\
-    (_c) = stack[ssize].c, (_d) = stack[ssize].d;\
+	assert(0 <= ssize);\
+	if(ssize == 0) { return; }\
+	(_a) = stack[--ssize].a, (_b) = stack[ssize].b,\
+	(_c) = stack[ssize].c, (_d) = stack[ssize].d;\
   } while(0)
 #define STACK_POP5(_a, _b, _c, _d, _e)\
   do {\
-    assert(0 <= ssize);\
-    if(ssize == 0) { return; }\
-    (_a) = stack[--ssize].a, (_b) = stack[ssize].b,\
-    (_c) = stack[ssize].c, (_d) = stack[ssize].d, (_e) = stack[ssize].e;\
+	assert(0 <= ssize);\
+	if(ssize == 0) { return; }\
+	(_a) = stack[--ssize].a, (_b) = stack[ssize].b,\
+	(_c) = stack[ssize].c, (_d) = stack[ssize].d, (_e) = stack[ssize].e;\
   } while(0)
 #define BUCKET_A(_c0) bucket_A[(_c0)]
 #if ALPHABET_SIZE == 256
@@ -5376,13 +5376,13 @@ In 64 bit mode, the following additional registers are used:
 #define GETIDX(a) ((0 <= (a)) ? (a) : (~(a)))
 #define MERGE_CHECK(a, b, c)\
   do {\
-    if(((c) & 1) ||\
-       (((c) & 2) && (ss_compare(T, PA + GETIDX(*((a) - 1)), PA + *(a), depth) == 0))) {\
-      *(a) = ~*(a);\
-    }\
-    if(((c) & 4) && ((ss_compare(T, PA + GETIDX(*((b) - 1)), PA + *(b), depth) == 0))) {\
-      *(b) = ~*(b);\
-    }\
+	if(((c) & 1) ||\
+	   (((c) & 2) && (ss_compare(T, PA + GETIDX(*((a) - 1)), PA + *(a), depth) == 0))) {\
+	  *(a) = ~*(a);\
+	}\
+	if(((c) & 4) && ((ss_compare(T, PA + GETIDX(*((b) - 1)), PA + *(b), depth) == 0))) {\
+	  *(b) = ~*(b);\
+	}\
   } while(0)
 		struct { int* a, * b, * c; int d; } stack[STACK_SIZE];
 		int* l, * r, * lm, * rm;
@@ -6665,7 +6665,7 @@ In 64 bit mode, the following additional registers are used:
 				if (n > 0) divsufsort(static_cast<const unsigned char*>(in), (int*)sa, n);
 			}
 			if (level < 3) {
-				assert(ht.size() >= (n * (sap == 0)) + (1u << 17 << args[0]));
+				assert(ht.size() >= (n * (sap == nullptr)) + (1u << 17 << args[0]));
 				isa = &ht[n * (sap == nullptr)];
 			}
 		}
